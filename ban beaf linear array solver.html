@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>BEAF/BAN linear array solver</h2>
+<textarea id="input">{3,3,{3,3,3}}</textarea>
+<button onclick="solve()">Solve</button>
+<p><input type="checkbox" id="removeones"> Always remove trailing 1's</p>
+<p><input type="checkbox" id="autorule3"> Auto-evaluate when second entry is 1</p>
+<p id="output"></p>
+<script>
+
+function solve() {
+	var inputString = document.getElementById("input").value;
+	var leftInnerExpression = inputString.slice(inputString.lastIndexOf("{"));
+	var innerExpression = leftInnerExpression.slice(0,leftInnerExpression.indexOf("}")+1);
+	var Array = innerExpression.replace("{","").replace("}","").split(","); // got linear array
+	var beforeInnerExpression = inputString.slice(0,inputString.lastIndexOf("{"));
+	var afterInnerExpression = leftInnerExpression.slice(leftInnerExpression.indexOf("}")+1);
+	
+var base = Array[0];
+var iterator = Array[1];
+var outputString = "";
+
+if (inputString.indexOf("{") == -1) { // No array
+	outputString = "";
+} else if (Array.length == 1 && Array[0] == "") {
+	outputString = "1";
+} else if (Array.length == 1) { // Rule 1
+	outputString = Array[0] + "";
+} else if (Array.length == 2) { // Rule 1
+	outputString = Array[0] ** Array[1] + "";
+} else if (Array[Array.length-1] == 1) { // Rule 2
+	Array.pop()
+	outputString = "{" + Array + "}";
+} else if (Array[1] == 1) { // Rule 3
+	outputString = Array[0] + "";
+} else {
+	var pilot = 2;
+	while (Array[pilot] == 1) {
+		pilot++;
+	}
+	var copilot = pilot - 1;
+	var innerArray = Array.toString().split(",");
+	innerArray[1]--; // reduce 2nd entry of inner array by 1
+	Array[pilot]--;
+	for (j = 0; j < copilot; j++) {
+		Array[j] = base; // change all entries before copilot into the base
+	}
+	var leftArray = Array.slice(0,copilot);
+	var rightArray = Array.slice(pilot);
+	outputString = "{" + leftArray + ",{" + innerArray + "}," + rightArray + "}";
+	if (document.getElementById("autorule3").checked) {
+		if (innerArray[1] == 1) {
+			innerArray = base;
+			outputString = "{" + leftArray + "," + innerArray + "," + rightArray + "}";
+		}
+	}
+}
+var resultString = beforeInnerExpression + outputString + afterInnerExpression;
+
+if (document.getElementById("removeones").checked) { // remove trailing ones
+	while (resultString.indexOf(",1}") != -1) {
+		resultString = resultString.replace(",1}","}");
+	}
+}
+
+// document.getElementById("output").innerHTML = resultString;
+document.getElementById("input").value = resultString;
+}
+</script>
+</body>
+</html>
