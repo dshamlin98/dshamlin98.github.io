@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<textarea id="input">s(3,3{1``3}3)</textarea>
+<button onclick="solve()">Solve</button>
+<p><input type="checkbox" id="simp" checked> Simplify expressions ({1,,...,,,2} (i+1 commas) = ,,...,, (i commas))</p>
+<p><input type="checkbox" id="mean" checked> Use mEAN (up to {1,,1,2})</p>
+<p><input type="checkbox" id="pdan"> Use pDAN (up to {1,,,3})</p>
+<p><input type="checkbox" id="simpg"> Simplify {1,,2}, {1,,3}, {1,,4} to `, ``, and ```</p>
+<p>Help: (select the text with your mouse)</p>
+<p><font color="white">This is a solver that is used to solve SAN arrays up to DAN. You input a SAN array in the
+form s([array]) and then you click the "Solve" button to evaluate one step (which is either one of the main rules
+or the process). It tries to simplify expressions whenever possible (applying rule 3 as much as possible).<br><br>
+Simplify expressions: simplifies expressions by writing separators with as few commas as possible by using
+{1,,...,,,2} (i+1 commas) = ,,...,,, (i commas). If unchecked, it only uses ,,...,,, as the basic separator.<br><br>
+Use mEAN: converts expressions to EAN/mEAN. Anything of the form {1,,n+1} gets converted to ```...``` with n grave accents 
+(up to 99). It also converts {A,,n+1} into {A^```...```} with n grave accents and beware that separators like {1,,1,,2}
+will also get converted so this checkbox should not be used for separators above {1,,1,2}. Internally, all calculations
+are done in DAN by converting everything to DAN, running the process, and then converting back to the chosen notation.<br><br>
+Use pDAN: Converts {A,,,2} into {A”} but it can also convert {1,,,1,,,2} so it should not be used above {1,,,3} 
+(pDAN limit).<br><br>
+Square brackets ([ ]) can be used in place of curly braces ({ }) but the solver will convert them to curly braces 
+when solving. Spaces will be ignored. Long expressions and expressions inside 20+ layers can require lots of calculations,
+due to the complexity of the level comparison function (to apply rule 4 and whether to apply the expanding rule or adding rule).
+You may encounter bugs in this program, but there shouldn't be any bugs when the input is valid (in the form s(_), 
+all entries are positive integers, and parentheses/brackets are balanced).
+</font></p>
+<script>
+
+function maxCommas(separator) { // Maximum number of commas in ,,,...,,,
+	var numCommas = 2;
+	while (separator.indexOf(",".repeat(numCommas)) >= 0) {
+		numCommas++;
+	}
+	return numCommas-1;
+}
+
+function convertToMaxCommas(separator) {
+// convert all expressions of double,triple,etc.-comma into expressions of m-ple comma
+	var highestCommas = maxCommas(separator);
+	var currentCommas = highestCommas;
+	var mpleComma;
+	currentCommas--;
+	separator = separator.replace(/(\d)/g, " " + '$1' + " ");
+	while (currentCommas >= 2) {
+		mpleComma = RegExp("\\s" + ",".repeat(currentCommas) + "\\s","g");
+		separator = separator.replace(mpleComma, "{1".repeat(highestCommas-currentCommas) + 
+		",".repeat(highestCommas) + "2}".repeat(highestCommas-currentCommas));
+		currentCommas--;
+	}
+	return separator.replace(/\s/g,"");
+}
+
+function simplify(separator) {
+// convert {1,,,...,,,2} (i commas) into ,,...,,, (i-1 commas) and {1} into comma.
+	var currentCommas = maxCommas(separator);
+	var mpleComma;
+	while (currentCommas > 2) {
+		mpleComma = RegExp("\\{1" + ",".repeat(currentCommas) + "2\\}","g");
+		separator = separator.replace(mpleComma, ",".repeat(currentCommas-1));
+		currentCommas--;
+	}
+	separator = separator.replace(/\{1\}/g, ","); // convert all {1}'s into commas.
+	return separator;
+}
+
+function parseSeparatorLeft(separator) { /* finds the leftmost separator,
+either a separator in braces or an m-ple comma */
+separator += "{,";
+	if (separator.indexOf(",") < separator.indexOf("{")) {
+		var commas = 1;
+		while (separator.indexOf(",".repeat(commas+1)) == separator.indexOf(",")) {
+			commas++;
+		}
+		return ",".repeat(commas);
+	}
+	if (separator.indexOf("{") == -1) {
+		return "";
+	} else {
+		var currentPosition = 0;
+		var lbraceStack = 0;
+		var lbracePosition = 0;
+		var rbracePosition = 0;
+		var initialPosition = separator.indexOf("{");
+		currentPosition = separator.indexOf("{");
+		lbraceStack++;
+		while (lbraceStack > 0) {
+			lbracePosition = separator.indexOf("{", currentPosition+1);
+			rbracePosition = separator.indexOf("}", currentPosition+1);
+			if (lbracePosition < rbracePosition) {
+				lbraceStack++;
+				currentPosition = lbracePosition;
+			} else {
+				lbraceStack--;
+				currentPosition = rbracePosition;
+			}
+		}
+		return separator.slice(initialPosition,currentPosition+1);
+	}
+}
+
+function parseSeparatorRight(separator) { /* finds the rightmost separator,
+either a separator in braces or an m-ple comma */
+	if (separator.lastIndexOf(",") > separator.lastIndexOf("}")) {
+		var commas = 1;
+		while (separator.lastIndexOf(",".repeat(commas+1)) + commas == separator.lastIndexOf(",")) {
+			commas++;
+		}
+		return ",".repeat(commas);
+	}
+	if (separator.indexOf("}") == -1) {
+		return "";
+	} else {
+		var currentPosition = separator.length-1;
+		var rbraceStack = 0;
+		var lbracePosition = separator.length-1;
+		var rbracePosition = separator.length-1;
+		var initialPosition = separator.lastIndexOf("}");
+		currentPosition = separator.lastIndexOf("}");
+		rbraceStack++;
+		while (rbraceStack > 0) {
+			lbracePosition = separator.lastIndexOf("{", currentPosition-1);
+			rbracePosition = separator.lastIndexOf("}", currentPosition-1);
+			if (lbracePosition == -1) {
+				return "";
+			} else {
+				if (lbracePosition < rbracePosition) {
+					rbraceStack++;
+					currentPosition = rbracePosition;
+				} else {
+					rbraceStack--;
+					currentPosition = lbracePosition;
+				}
+			}
+		}
+		return separator.slice(currentPosition,initialPosition+1);
+	}
+}
+
+function getAllSeparatorsInSeparator(separator) {
+	var leftmostSeparator = parseSeparatorLeft(separator);
+	var separatorList = []; // array listing all separators in base layer of separator
+	if (leftmostSeparator.startsWith(",")) { // comma or m-ple comma, there are no separators in it.
+		return []; // nothing
+	}
+	// separator is of the form {___}
+	leftmostSeparator = leftmostSeparator.slice(1); // remove first lbrace, then parse the next separator
+
+	while (leftmostSeparator.indexOf("{") != -1 || leftmostSeparator.indexOf(",") != -1) { 
+	// repeat until no lbrace or comma is remaining
+		separatorAddToList = parseSeparatorLeft(leftmostSeparator); // find leftmost separator
+		separatorList.push(separatorAddToList); // add separator to list
+		leftmostSeparator = leftmostSeparator.slice(separatorAddToList.length + 
+		leftmostSeparator.indexOf(separatorAddToList)); // remove separator and repeat
+	}
+	return separatorList;
+	// lists all separators in separator, {1,2{1,,2}2,,2} returns "," "{1,,2}" and ",,"	
+}
+
+function getAllSeparatorsInBaseLayer(SANArray) {
+	separator = SANArray.replace("s(","{").replace(")","}");
+	return getAllSeparatorsInSeparator(separator);
+}
+
+function convertMEANtoPDAN(separator) {
+	var numGraves = 1;
+	var mpleGrave = 0;
+	while (separator.indexOf("`".repeat(numGraves)) >= 0) {
+		numGraves++;
+	}
+		var currentGraves = numGraves;
+		var currentGraves2 = numGraves;
+		while (currentGraves > 0) {
+			mpleGrave = RegExp("\\^"+"\\`".repeat(currentGraves) + "\\}","g");
+			separator = separator.replace(mpleGrave, ",," + (currentGraves+1) + "}");
+			currentGraves--;
+		}
+		while (currentGraves2 > 0) {
+			mpleGrave = RegExp("\\`".repeat(currentGraves2),"g");
+			separator = separator.replace(mpleGrave, "{1,," + (currentGraves2+1) + "}");
+			currentGraves2--;
+		}
+	return separator;
+}
+
+function convertPDANtoDAN(separator) {
+	if (separator.includes("\"")) {
+		separator = separator.replace(/"/g, ",,,2");
+	}
+	if (separator.includes("”")) {
+		separator = separator.replace(/”/g, ",,,2");
+	}
+	if (separator.includes("^,,}")) {
+		separator = separator.replace(/\^,,\}/g, ",,,2}");
+	}
+		return separator;
+}
+
+function rule3(separator) {
+	var partialSeparator;
+	var separatorToRemove;
+	var oldSeparator;
+	while (oldSeparator != separator) {
+		oldSeparator = separator
+		while (separator.includes(",1}")) {
+			separator = separator.replace(/,1\}/g, "}");
+		}
+		while (separator.includes(",}")) {
+			separator = separator.replace(/,\}/g, "}");
+		}
+		while (separator.includes("}1}")) {
+			partialSeparator = separator.slice(0, separator.lastIndexOf("}1}")+2);
+			separatorToRemove = parseSeparatorRight(partialSeparator);
+			separator = separator.replace(separatorToRemove + "1}", "}");
+		}
+	}
+	return separator;
+}
+
+function rule3atBaseLayer(separator) {
+	var partialSeparator;
+	var separatorToRemove;
+	var oldSeparator;
+	while (oldSeparator != separator) {
+		oldSeparator = separator
+		while (separator.includes(",1)")) {
+			separator = separator.replace(/,1\)/g, ")");
+		}
+		while (separator.includes(",)")) {
+			separator = separator.replace(/,\)/g, ")");
+		}
+		while (separator.includes("}1)")) {
+			partialSeparator = separator.slice(0, separator.lastIndexOf("}1)")+2);
+			separatorToRemove = parseSeparatorRight(partialSeparator);
+			separator = separator.replace(separatorToRemove + "1)", ")");
+		}
+	}
+	return separator;
+}
+
+function getAllEntriesInSeparator(separator) {
+	//separator = simplify(separator); // prevent problems like {1}'s
+	if (separator.startsWith(",")) {
+		return [];
+	}
+	var leftmostSeparator = parseSeparatorLeft(separator); // take only the leftmost separator
+	entryList = [];
+	leftmostSeparator = leftmostSeparator.slice(1);
+	
+	while (leftmostSeparator.includes("{") || leftmostSeparator.includes(",")) {
+		var separatorPosition = leftmostSeparator.indexOf(parseSeparatorLeft(leftmostSeparator));
+		var separatorLength = parseSeparatorLeft(leftmostSeparator).length
+		entryList.push(parseFloat(leftmostSeparator));
+		leftmostSeparator = leftmostSeparator.slice(separatorLength + separatorPosition);
+	}
+	entryList.push(parseFloat(leftmostSeparator));
+		return entryList;
+	
+}
+
+function getAllEntriesInBaseLayer(SANArray) {
+	separator = SANArray.replace("s(","{").replace(")","}");
+	return getAllEntriesInSeparator(separator);
+}
+
+function higherSeparator(separator1, separator2) {
+	if (separator1.startsWith("s(")) {
+		return separator2;
+	} else if (separator2.startsWith("s(")) {
+		return separator1;
+	} // all arrays have the lowest level
+	
+	//setup
+	var DANseparator1 = rule3(simplify(convertPDANtoDAN(convertMEANtoPDAN(separator1))));
+	var DANseparator2 = rule3(simplify(convertPDANtoDAN(convertMEANtoPDAN(separator2))));
+	var highestCommas = maxCommas(DANseparator1 + "&" + DANseparator2);
+	var combinedSeparators = convertToMaxCommas(" " + DANseparator1 + " & " + DANseparator2 + " ");
+	DANseparator1 = combinedSeparators.slice(0, combinedSeparators.indexOf("&"));
+	DANseparator2 = combinedSeparators.slice(combinedSeparators.indexOf("&")+1);
+		// convert to DAN and make m-ple comma the only basic separator.
+	DANseparator1 = DANseparator1.replace(/(\d),(\d)/g, '$1' + "{1}" + '$2');
+	DANseparator2 = DANseparator2.replace(/(\d),(\d)/g, '$1' + "{1}" + '$2');
+	if (DANseparator1 == ",") {	DANseparator1 = "{1}"; }
+	if (DANseparator2 == ",") {	DANseparator2 = "{1}"; }
+		// convert all single commas into {1}'s
+	if (DANseparator1 == DANseparator2) {
+		return separator1;
+		} // The two separators are equal
+	
+	if (DANseparator1.startsWith(",,")) {
+		return separator1;
+	} else if (DANseparator2.startsWith(",,")) {
+		return separator2;
+	} // return m-ple comma if one of the separators is m-ple comma.
+	
+	if (getAllEntriesInSeparator(DANseparator1).length == 1 && 
+	getAllEntriesInSeparator(DANseparator2).length == 1) {
+		var entry1 = getAllEntriesInSeparator(DANseparator1)[0];
+		var entry2 = getAllEntriesInSeparator(DANseparator2)[0];
+			return "{" + Math.max(entry1, entry2) + "}"; // both separators have only one entry
+	} else if (getAllEntriesInSeparator(DANseparator1).length == 1) {
+		return separator2;
+	} else if (getAllEntriesInSeparator(DANseparator2).length == 1) {
+		return separator1;
+	} // step 4 complete
+	// Now find maximum separator in the list of separators in the separator.
+	var separatorList1 = getAllSeparatorsInSeparator(DANseparator1);
+	var separatorList2 = getAllSeparatorsInSeparator(DANseparator2);
+	var maxSeparator1 = separatorList1[0];
+	var maxSeparator2 = separatorList2[0];
+	var k = 0;
+	while (k < separatorList1.length) {
+		maxSeparator1 = higherSeparator(maxSeparator1, separatorList1[k]);
+		k++;
+	}
+	var l = 0;
+	while (l < separatorList2.length) {
+		maxSeparator2 = higherSeparator(maxSeparator2, separatorList2[l]);
+		l++;
+	} // found maximum separator in separator.
+	if (higherSeparator(maxSeparator1, maxSeparator2) == maxSeparator1 && maxSeparator1 != maxSeparator2) {
+		return separator1;
+	}
+	if (higherSeparator(maxSeparator1, maxSeparator2) == maxSeparator2 && maxSeparator1 != maxSeparator2) {
+		return separator2;
+	} // return separator based on highest leveled separator in the separator (rule 3 already applied)
+	// Now compare the stuff to the right of the highest leveled separator.
+	//insert code here {1{1,,,2}2,,,2} didnt parse correctly
+	var partialString1 = DANseparator1.slice(1);
+	while (parseSeparatorLeft(partialString1) != maxSeparator1) {
+		partialString1 = partialString1.slice(parseSeparatorLeft(partialString1).length + 1);
+	}
+	var partialString2 = DANseparator2.slice(1);
+	while (parseSeparatorLeft(partialString2) != maxSeparator2) {
+		partialString2 = partialString2.slice(parseSeparatorLeft(partialString2).length + 1);
+	}
+	var startPosition1 = DANseparator1.length - partialString1.length;
+	var startPosition2 = DANseparator2.length - partialString2.length;
+	// end stuff
+	var leftSeparator1 = DANseparator1.slice(0, DANseparator1.indexOf(maxSeparator1, startPosition1)) + "}";
+	var rightSeparator1 = "{" + DANseparator1.slice(DANseparator1.indexOf(maxSeparator1, startPosition1) + maxSeparator1.length);
+	var leftSeparator2 = DANseparator2.slice(0, DANseparator2.indexOf(maxSeparator2, startPosition2)) + "}";
+	var rightSeparator2 = "{" + DANseparator2.slice(DANseparator2.indexOf(maxSeparator2, startPosition2) + maxSeparator2.length);
+	leftseparator1 = rule3(leftSeparator1);
+	leftseparator2 = rule3(leftSeparator2);
+	rightseparator1 = rule3(rightSeparator1);
+	rightseparator2 = rule3(rightSeparator2);
+	if (higherSeparator(rightSeparator1, rightSeparator2) == rightSeparator1 && rightSeparator1 != rightSeparator2) {
+		return separator1;
+	}
+	if (higherSeparator(rightSeparator1, rightSeparator2) == rightSeparator2 && rightSeparator1 != rightSeparator2) {
+		return separator2;
+	}
+	if (higherSeparator(leftSeparator1, leftSeparator2) == leftSeparator1 && leftSeparator1 != leftSeparator2) {
+		return separator1;
+	}
+	if (higherSeparator(leftSeparator1, leftSeparator2) == leftSeparator2 && leftSeparator1 != leftSeparator2) {
+		return separator2;
+	}
+	
+}
+
+function areEqualSeparators(separator1, separator2) {
+	if (separator1.startsWith("s(") && separator2.startsWith("s(")) {
+		return true;
+	} else if (separator1.startsWith("s(") || separator2.startsWith("s(")) {
+		return false;
+	} // all arrays have the lowest level
+	
+	//setup
+	var DANseparator1 = rule3(simplify(convertPDANtoDAN(convertMEANtoPDAN(separator1))));
+	var DANseparator2 = rule3(simplify(convertPDANtoDAN(convertMEANtoPDAN(separator2))));
+	var highestCommas = maxCommas(DANseparator1 + "&" + DANseparator2);
+	var combinedSeparators = convertToMaxCommas(" " + DANseparator1 + " & " + DANseparator2 + " ");
+	DANseparator1 = combinedSeparators.slice(0, combinedSeparators.indexOf("&"));
+	DANseparator2 = combinedSeparators.slice(combinedSeparators.indexOf("&")+1);
+		// convert to DAN and make m-ple comma the only basic separator.
+	DANseparator1 = DANseparator1.replace(/(\d),(\d)/g, '$1' + "{1}" + '$2');
+	DANseparator2 = DANseparator2.replace(/(\d),(\d)/g, '$1' + "{1}" + '$2');
+	if (DANseparator1 == ",") {	DANseparator1 = "{1}"; }
+	if (DANseparator2 == ",") {	DANseparator2 = "{1}"; }
+		// convert all single commas into {1}'s
+	if (DANseparator1 == DANseparator2) {
+		return true;
+		} // The two separators are equal
+	
+	if (DANseparator1.startsWith(",,")) {
+		return false;
+	} else if (DANseparator2.startsWith(",,")) {
+		return false;
+	} // return m-ple comma if one of the separators is m-ple comma.
+	
+	if (getAllEntriesInSeparator(DANseparator1).length == 1 && 
+	getAllEntriesInSeparator(DANseparator2).length == 1) {
+		var entry1 = getAllEntriesInSeparator(DANseparator1)[0];
+		var entry2 = getAllEntriesInSeparator(DANseparator2)[0];
+			if (entry1 == entry2) {
+			return true;
+			} else {
+			return false;
+			}
+			
+	} else if (getAllEntriesInSeparator(DANseparator1).length == 1) {
+		return false;
+	} else if (getAllEntriesInSeparator(DANseparator2).length == 1) {
+		return false;
+	} // step 4 complete
+	// Now find maximum separator in the list of separators in the separator.
+	var separatorList1 = getAllSeparatorsInSeparator(DANseparator1);
+	var separatorList2 = getAllSeparatorsInSeparator(DANseparator2);
+	var maxSeparator1 = separatorList1[0];
+	var maxSeparator2 = separatorList2[0];
+	for (i=0; i<separatorList1.length; i++) {
+		maxSeparator1 = higherSeparator(maxSeparator1, separatorList1[i]);
+	}
+	for (i=0; i<separatorList2.length; i++) {
+		maxSeparator2 = higherSeparator(maxSeparator2, separatorList2[i]);
+	} // found maximum separator in separator.
+	if (maxSeparator1 != maxSeparator2) {
+		return false;
+	} // return separator based on highest leveled separator in the separator (rule 3 already applied)
+	// Now compare the stuff to the right of the highest leveled separator.
+	//insert code here {1{1,,,2}2,,,2} didnt parse correctly
+	var partialString1 = DANseparator1.slice(1);
+	while (parseSeparatorLeft(partialString1) != maxSeparator1) {
+		partialString1 = partialString1.slice(parseSeparatorLeft(partialString1).length + 1);
+	}
+	var partialString2 = DANseparator2.slice(1);
+	while (parseSeparatorLeft(partialString2) != maxSeparator2) {
+		partialString2 = partialString2.slice(parseSeparatorLeft(partialString2).length + 1);
+	}
+	var startPosition1 = DANseparator1.length - partialString1.length;
+	var startPosition2 = DANseparator2.length - partialString2.length;
+	// end stuff
+	var leftSeparator1 = DANseparator1.slice(0, DANseparator1.indexOf(maxSeparator1, startPosition1)) + "}";
+	var rightSeparator1 = "{" + DANseparator1.slice(DANseparator1.indexOf(maxSeparator1, startPosition1) + maxSeparator1.length);
+	var leftSeparator2 = DANseparator2.slice(0, DANseparator2.indexOf(maxSeparator2, startPosition2)) + "}";
+	var rightSeparator2 = "{" + DANseparator2.slice(DANseparator2.indexOf(maxSeparator2, startPosition2) + maxSeparator2.length);
+	leftseparator1 = rule3(leftSeparator1);
+	leftseparator2 = rule3(leftSeparator2);
+	rightseparator1 = rule3(rightSeparator1);
+	rightseparator2 = rule3(rightSeparator2);
+		
+	if (rightSeparator1 != rightSeparator2) {
+		return false;
+	}
+	if (leftSeparator1 != leftSeparator2) {
+		return false;
+	}
+	if (higherSeparator(leftSeparator1, leftSeparator2) == leftSeparator1 && leftSeparator1 != leftSeparator2) {
+		return false;
+	}
+	if (higherSeparator(leftSeparator1, leftSeparator2) == leftSeparator2 && leftSeparator1 != leftSeparator2) {
+		return false;
+	}
+	return true;
+}
+
+function rule4InBaseLayerOfSeparator(separator) {
+	if (separator.startsWith("s(")) {
+		return separator;
+	}
+	separator = rule3(separator);
+	var separators = getAllSeparatorsInSeparator(separator); // {2} {3}
+	var entries = getAllEntriesInSeparator(separator); // 1 1 2
+	var i=1;
+	while (i < entries.length) {
+		if (entries[i] == 1 && higherSeparator(separators[i-1], separators[i]) == separators[i] && 
+		!(areEqualSeparators(separators[i-1], separators[i]))) { // {a}1{b} for a<b
+			separators.splice(i-1, 1);
+			entries.splice(i, 1);
+		} else {
+			i++;
+		}
+	}
+	var completedString = "{";
+	for (i=0; i<entries.length - 1; i++) {
+		completedString += entries[i] + separators[i];
+	}
+	completedString += entries[entries.length-1] + "}";
+	return completedString;
+	
+}
+
+function getArrayGivenSeparatorsAndEntries(entryList, separatorList, mode) { // entryList and separatorList are arrays
+// mode: 0 = s(__), 1 = {__}
+	var separatorString = ""
+	for (i=0; i<entryList.length - 1; i++) {
+		separatorString += entryList[i] + separatorList[i];
+	}
+	separatorString += entryList[entryList.length-1];
+	if (mode == 0) {
+		return "s(" + separatorString + ")"
+	} else if (mode == 1) {
+		return "{" + separatorString + "}"
+	}
+}
+
+function calculate() {
+	var inputString = document.getElementById("input").value;
+	inputString = inputString.replace(/\[/g, "{").replace(/\]/g, "}").replace(/\s/g, "");
+	if (!(inputString.includes("s("))) { // don't evaluate when no s( is found
+		return inputString;
+	}
+	var SANArray = inputString.slice(inputString.lastIndexOf("s("));
+	SANArray = SANArray.slice(0, SANArray.indexOf(")") + 1); // get innermost SAN array
+	SANArray = rule3atBaseLayer(SANArray);
+	SANArray = simplify(rule3(convertPDANtoDAN(convertMEANtoPDAN(SANArray))));
+	SANArray = convertToMaxCommas(SANArray); // convert to m-ple commas by using ,,...,, (i commas) = {1,,...,,,2} (i+1 commas)
+	var beforeSANArray = inputString.slice(0, inputString.lastIndexOf("s(")); // to remember what was cut off
+	var afterSANArray = inputString.slice(inputString.indexOf(")",inputString.lastIndexOf("s(")) + 1);
+	var getMaxCommas = maxCommas(SANArray);
+
+	// convert to DAN and apply rule 3 until rule 3 cannot apply anymore.
+	var separatorsInBaseLayer = getAllSeparatorsInBaseLayer(SANArray);
+	var entriesInBaseLayer = getAllEntriesInBaseLayer(SANArray);
+	
+	if (separatorsInBaseLayer.length == 0) { // in the form s(a)
+		SANArray = SANArray.replace(")",",1)");		// change s(a) to s(a,1)
+		separatorsInBaseLayer = getAllSeparatorsInBaseLayer(SANArray);
+		entriesInBaseLayer = getAllEntriesInBaseLayer(SANArray);
+	}
+	if (separatorsInBaseLayer[0] != ",") { // in the form s(a{b}c #) with b>1
+		SANArray = SANArray.slice(0, SANArray.indexOf("{")) + ",1" + SANArray.slice(SANArray.indexOf("{"));
+		separatorsInBaseLayer = getAllSeparatorsInBaseLayer(SANArray);
+		entriesInBaseLayer = getAllEntriesInBaseLayer(SANArray);
+	}
+	if (entriesInBaseLayer.length == 2 && separatorsInBaseLayer[0] == ",") { // in the form s(a,b)
+		return beforeSANArray + entriesInBaseLayer[0] ** entriesInBaseLayer[1] + afterSANArray; // Evaluate s(a,b) = a^b
+	}
+	if (entriesInBaseLayer[1] != 1 && entriesInBaseLayer[2] != 1 && separatorsInBaseLayer[1] == ",") {
+	// in the form s(a,b,c #) with b,c>1
+		var innerSANArray = SANArray;
+		var separatorsInInnerBaseLayer = getAllSeparatorsInBaseLayer(innerSANArray);
+		var entriesInInnerBaseLayer = getAllEntriesInBaseLayer(innerSANArray);
+		entriesInInnerBaseLayer[1]--;
+		entriesInBaseLayer[2]--;
+		innerSANArray = getArrayGivenSeparatorsAndEntries(entriesInInnerBaseLayer, separatorsInInnerBaseLayer, 0);
+		entriesInBaseLayer[1] = innerSANArray;
+		return beforeSANArray + getArrayGivenSeparatorsAndEntries(entriesInBaseLayer, separatorsInBaseLayer, 0) + afterSANArray;
+	} // recursion rule
+	
+	// prepare for the process
+	var base = entriesInBaseLayer[0];
+	var iterator = entriesInBaseLayer[1];
+	var A_t = [SANArray]; // A_0, A_1, A_2, ...
+	var B_t = []; // B_0, B_1, B_2, ...
+	var leftRemovedB_t = [];
+	var rightRemovedB_t = [];
+	var entryIndex = 2; // start from the 3rd entry
+	while (entriesInBaseLayer[entryIndex] == 1) {
+		entryIndex++;
+	} // find first non-1 entry in base layer
+	if (separatorsInBaseLayer[entryIndex-1] == ",") { // comma is immediately before non-1 entry in base layer
+		entriesInBaseLayer[entryIndex]--;
+		entriesInBaseLayer[entryIndex-1] = iterator;
+		entryIndex -= 2;
+		while (entryIndex>0) {
+			entriesInBaseLayer[entryIndex] = base;
+			entryIndex--;
+		}
+		return simplify(rule3atBaseLayer(beforeSANArray + 
+		getArrayGivenSeparatorsAndEntries(entriesInBaseLayer, separatorsInBaseLayer, 0) + afterSANArray));
+	} // case B1 at base layer
+	if (separatorsInBaseLayer[entryIndex-1].startsWith(",,")) { // m-ple comma is before you in base layer
+		separatorsInBaseLayer.splice(entryIndex-1, 0, "{1" + separatorsInBaseLayer[entryIndex-1] + "2}");
+		entriesInBaseLayer.splice(entryIndex, 0, 2);
+		entriesInBaseLayer[entryIndex+1]--;
+		return rule3atBaseLayer(beforeSANArray + 
+		getArrayGivenSeparatorsAndEntries(entriesInBaseLayer, separatorsInBaseLayer, 0) + afterSANArray);
+	}
+	var SANseparator = "";
+	if (separatorsInBaseLayer[entryIndex-1].startsWith("{")) {
+	// a separator not comma or m-ple comma is before you in base layer
+		separatorsInBaseLayer.splice(entryIndex-1, 0, separatorsInBaseLayer[entryIndex-1]);
+		entriesInBaseLayer.splice(entryIndex, 0, 2);
+		entriesInBaseLayer[entryIndex+1]--;
+		A_t.push(separatorsInBaseLayer[entryIndex-1]);
+		var leftPartialArray = "s(";
+		j = 0;
+		while (j < entryIndex-1) {
+			leftPartialArray += entriesInBaseLayer[j] + separatorsInBaseLayer[j];
+			j++;
+		}
+		leftPartialArray += entriesInBaseLayer[j];
+		leftRemovedB_t.push(leftPartialArray);
+		var rightPartialArray = "";
+		j = entryIndex;
+		while (j < separatorsInBaseLayer.length) {
+			rightPartialArray += entriesInBaseLayer[j] + separatorsInBaseLayer[j];
+			j++;
+		}
+		rightPartialArray += entriesInBaseLayer[j];
+		rightPartialArray += ")";
+		rightRemovedB_t.push(rightPartialArray);
+		SANseparator = rule4InBaseLayerOfSeparator(separatorsInBaseLayer[entryIndex-1]); // work on this separator now
+	}
+	var layer = 1;
+		/* Now work inside the separator.*/
+		
+while (true) {
+		
+		
+		
+	var separatorsInSeparator = getAllSeparatorsInSeparator(SANseparator);
+	var entriesInSeparator = getAllEntriesInSeparator(SANseparator);
+	entryIndex = 0; // restart entryindex in new layer
+	if (entriesInSeparator[0] != 1) { // non-1 entry immediately after lbrace
+		leftPartialArray = "";
+		rightPartialArray = "";
+		for (j=0; j<leftRemovedB_t.length; j++) {
+			leftPartialArray += leftRemovedB_t[j];
+		}
+		for (j=0; j<rightRemovedB_t.length; j++) {
+			rightPartialArray = rightRemovedB_t[j] + rightPartialArray;
+		}
+		entriesInSeparator[0]--;
+		var copySeparator = getArrayGivenSeparatorsAndEntries(entriesInSeparator, separatorsInSeparator, 1);
+		
+		return simplify(rule3atBaseLayer(beforeSANArray + leftPartialArray +
+		(copySeparator + "1").repeat(iterator-1) + copySeparator + rightPartialArray + afterSANArray));
+	}
+	while (entriesInSeparator[entryIndex] == 1) {
+		entryIndex++;
+	} // find first non-1 entry in separator
+	if (separatorsInSeparator[entryIndex-1] == ",") {
+		entriesInSeparator[entryIndex]--;
+		entriesInSeparator[entryIndex-1] = iterator;
+		SANseparator = rule4InBaseLayerOfSeparator(getArrayGivenSeparatorsAndEntries(entriesInSeparator, separatorsInSeparator, 1));
+		// change all entries at base layer before them into the base.
+		var arrayToLeftOfSeparator = leftRemovedB_t[0] + ")";
+		var entriesToChange = getAllEntriesInBaseLayer(arrayToLeftOfSeparator);
+		var separatorsToUnchange = getAllSeparatorsInBaseLayer(arrayToLeftOfSeparator);
+		for (i=0; i<entriesToChange.length; i++) {
+			entriesToChange[i] = base;
+		}
+		arrayToLeftOfSeparator = getArrayGivenSeparatorsAndEntries(entriesToChange, separatorsToUnchange, 0).replace(")","");
+		for (i=1; i<leftRemovedB_t.length; i++) {
+			arrayToLeftOfSeparator += leftRemovedB_t[i];
+		}
+		
+		return simplify(rule3atBaseLayer(rule3(beforeSANArray + arrayToLeftOfSeparator + SANseparator + rightPartialArray + afterSANArray)));
+	} // comma is immediately before you in separator
+	if (separatorsInSeparator[entryIndex-1] == ",".repeat(getMaxCommas)) { // m-ple comma is immediately before you in separator
+		entriesInSeparator[entryIndex]--;
+		separatorsInSeparator[entryIndex-1] += "2" + separatorsInSeparator[entryIndex-1];
+		modifiedSeparator = getArrayGivenSeparatorsAndEntries(entriesInSeparator, separatorsInSeparator, 1);
+		simplifiedModifiedSeparator = rule4InBaseLayerOfSeparator(rule3(modifiedSeparator));
+		
+		entriesInSeparator = getAllEntriesInSeparator(simplifiedModifiedSeparator);
+		separatorsInSeparator = getAllSeparatorsInSeparator(simplifiedModifiedSeparator);
+		A_t.push(separatorsInSeparator[entryIndex-1]);
+		leftRemovedB_t[layer] = "{";
+		for (i=0; i<entryIndex-1; i++) {
+			leftRemovedB_t[layer] += entriesInSeparator[i] + separatorsInSeparator[i];
+		}
+		leftRemovedB_t[layer] += entriesInSeparator[entryIndex-1];
+		rightRemovedB_t[layer] = entriesInSeparator[entriesInSeparator.length-1] + "}";
+		for (i=entriesInSeparator.length-2; i>=entryIndex; i--) {
+			rightRemovedB_t[layer] = entriesInSeparator[i] + separatorsInSeparator[i] + rightRemovedB_t[layer];
+		}
+		B_t[layer+1] = A_t[layer+1];
+	for (i = layer; i>=0; i--) {
+		B_t[i] = leftRemovedB_t[i] + B_t[i+1] + rightRemovedB_t[i]
+	} // set up B_t[0,1,2,...until layer]
+	
+	// searching out step
+	u = layer+1; // something
+	j = getMaxCommas; // j-separator
+	m = layer;
+	t = layer;
+	v = 0;
+	
+	//repeat
+while (j > 1) {
+	while (higherSeparator(A_t[t], A_t[m]) == A_t[t] || areEqualSeparators(A_t[t], A_t[m])) {
+		t--;
+	} // search for the innermost separator
+		nSeparator = "";
+		leftnSeparator = "";
+		rightnSeparator = "";
+		for (i = m; i < u; i++) {
+			leftnSeparator += leftRemovedB_t[i];
+			rightnSeparator = rightRemovedB_t[i] + rightnSeparator;
+		}
+		nSeparator = leftnSeparator + A_t[m] + rightnSeparator;
+		if (higherSeparator(A_t[t], nSeparator) == nSeparator &&
+		!(areEqualSeparators(A_t[t], nSeparator))) { // has lower level than what it's searching for
+			v = t+1;
+			while (higherSeparator(A_t[v], A_t[u]) == A_t[v] || areEqualSeparators(A_t[v], A_t[u])) { // adding rule
+			v++;
+			}	
+			leftArray = "";
+			rightArray = "";
+			for (i=0; i<v; i++) {
+				leftArray += leftRemovedB_t[i];
+				rightArray = rightRemovedB_t[i] + rightArray;
+			}
+			var leftAddingSeparator = "";
+			var rightAddingSeparator = "";
+			for (z = m; z < u; z++) {
+				leftAddingSeparator += leftRemovedB_t[z];
+				rightAddingSeparator = rightRemovedB_t[z] + rightAddingSeparator;
+			}
+			return rule3(rule3atBaseLayer(beforeSANArray + leftArray + leftAddingSeparator + A_t[v] + rightAddingSeparator + rightArray + afterSANArray));
+		} // adding rule
+		u = m;
+		m = t;
+		j--;
+	}
+
+// expanding rule
+// u is the layer of the 1-separator, m is the layer of the 0-separator.
+	var unchangedLeftParts = "";
+	var unchangedRightParts = "";
+	for (i=0; i<m; i++) {
+		unchangedLeftParts += leftRemovedB_t[i];
+		unchangedRightParts = rightRemovedB_t[i] + unchangedRightParts;
+	}
+	var repeatLeftParts = "";
+	var repeatRightParts = "";
+	for (i=m; i<u; i++) {
+		repeatLeftParts += leftRemovedB_t[i];
+		repeatRightParts = rightRemovedB_t[i] + repeatRightParts;
+	}
+	return simplify(rule3atBaseLayer(rule3(beforeSANArray + unchangedLeftParts + repeatLeftParts.repeat(iterator-1) + "," +
+	repeatRightParts.repeat(iterator-1) + unchangedRightParts + afterSANArray)));
+//expanding rule
+	}
+	if (separatorsInSeparator[entryIndex-1].startsWith("{")) { // a separator not comma or m-ple comma immediately before you in separator
+		entriesInSeparator[entryIndex]--;
+		separatorsInSeparator[entryIndex-1] += "2" + separatorsInSeparator[entryIndex-1];
+		modifiedSeparator = getArrayGivenSeparatorsAndEntries(entriesInSeparator, separatorsInSeparator, 1);
+		simplifiedModifiedSeparator = rule4InBaseLayerOfSeparator(rule3(modifiedSeparator));
+		
+		entriesInSeparator = getAllEntriesInSeparator(simplifiedModifiedSeparator);
+		separatorsInSeparator = getAllSeparatorsInSeparator(simplifiedModifiedSeparator);
+		A_t.push(separatorsInSeparator[entryIndex-1]);
+		leftRemovedB_t[layer] = "{";
+		for (i=0; i<entryIndex-1; i++) {
+			leftRemovedB_t[layer] += entriesInSeparator[i] + separatorsInSeparator[i];
+		}
+		leftRemovedB_t[layer] += entriesInSeparator[entryIndex-1];
+		leftPartialArray += leftRemovedB_t[layer]; // got the left part
+		rightRemovedB_t[layer] = entriesInSeparator[entriesInSeparator.length-1] + "}";
+		for (i=entriesInSeparator.length-2; i>=entryIndex; i--) {
+			rightRemovedB_t[layer] = entriesInSeparator[i] + separatorsInSeparator[i] + rightRemovedB_t[layer];
+		}
+		rightPartialArray = rightRemovedB_t[layer] + rightPartialArray; // got the right part
+		SANseparator = rule4InBaseLayerOfSeparator(separatorsInSeparator[entryIndex-1]);
+		layer++;
+	}
+}
+}
+// for s(3,3{1{1,3}3}2), entriesinbaselayer = [3, 3, 2], separators=[",", "{1{1,3}3}"]
+// SANArray = s(3,3{1{1,3}3}2), getMaxCommas=1
+// A_t = [s(3,3{1{1,3}3}2)], B_t = [], entryIndex=2
+
+// SANseparator = {1{1,3}3}
+// entriesInBaseLayer = 3,3,2,1
+// leftPartialArray = "s(3,3", rightPartialArray = 2{1{1,3}3}1)
+// leftRemovedB_t = "s(3,3", rightRemovedB_t = "2{1{1,3}3}1)"
+
+// separatorsInSeparator = "{1,3}", entriesInSeparator = "1","3", entryIndex=1
+// after: separatorsInSeparator[x-1] = "{1,3}","{1,3}", entriesInSeparator = "1","2","2", entryindex=1
+// {1{1,3}2{1,3}2}
+
+
+// beforeSANArray + leftPartialArray + Separator + rightPartialArray + afterSANArray
+
+function solve() {
+finalResult = calculate();
+if (document.getElementById("simp").checked) { 
+	finalResult = simplify(rule3(rule3atBaseLayer(finalResult)));
+} else {
+	finalResult = convertToMaxCommas(rule3(rule3atBaseLayer(finalResult)));
+}
+if (document.getElementById("mean").checked) { 
+	for (i=99; i>=1; i--) {
+		replaceString = RegExp("{1,," + (i+1) + "\\}", "g")
+		finalResult = finalResult.replace(replaceString, "`".repeat(i));
+	}
+	for (i=99; i>=1; i--) {
+		replaceString = RegExp(",," + (i+1) + "\\}", "g")
+		finalResult = finalResult.replace(replaceString, "^" + "`".repeat(i)+"}");
+	}
+}
+if (document.getElementById("pdan").checked) { 
+	finalResult = finalResult.replace(/,,,2\}/g, "”}");
+}
+if (document.getElementById("simpg").checked) { 
+	finalResult = finalResult.replace(/\{1,,2\}/g, "`");
+	finalResult = finalResult.replace(/\{1,,3\}/g, "``");
+	finalResult = finalResult.replace(/\{1,,4\}/g, "```");
+}
+document.getElementById("input").value = finalResult;
+}
+
+// function list: maxCommas, convertToMaxCommas, convertMEANtoPDAN, convertPDANtoDAN, 
+// parseSeparatorLeft, parseSeparatorRight, getAllSeparatorsInSeparator, getAllSeparatorsInBaseLayer,
+// getAllEntriesInSeparator, getAllEntriesInBaseLayer, simplify, rule3,
+// rule3atBaseLayer, rule4InBaseLayerOfSeparator, higherSeparator, areEqualSeparators,
+// getArrayGivenSeparatorsAndEntries (3 arguments)
+</script>
+
+</body>
+</html>
