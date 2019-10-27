@@ -728,7 +728,7 @@ while (j > 1) {
 		repeatLeftParts += leftRemovedB_t[i];
 		repeatRightParts = rightRemovedB_t[i] + repeatRightParts;
 	}
-	SANmessage = "Input: " + SANinput + "<br><br>The innermost separator with lower level than the " + (j) + "-separator " + A_t[u] + " has equal or higher level than " + nSeparator + " so we go to the expanding rule: Change the 0-separator " + A_t[m] + " to S<sub>b</sub>, where b is iterator, S<sub>1</sub> is comma and S<sub>n</sub> is " + repeatLeftParts + " S<sub>n-1</sub> " + repeatRightParts + " by replacing the 1-separator with S<sub>n</sub>.<br>Result: ";
+	SANmessage = "Input: " + SANinput + "<br><br>The innermost separator with lower level than the " + (j) + "-separator " + A_t[u] + " has equal or higher level than " + nSeparator + " so we go to the expanding rule: Change the 0-separator " + A_t[m] + " to S<sub>b</sub>, where b is iterator, S<sub>1</sub> is comma and S<sub>n</sub> is " + repeatLeftParts + " S<sub>n-1</sub> " + repeatRightParts + " by replacing the 1-separator with S<sub>n-1</sub> in S<sub>n</sub>.<br>Result: ";
 		return simplify(rule3atBaseLayer(rule3(beforeSANArray + unchangedLeftParts + repeatLeftParts.repeat(iterator-1) + "," +
 	repeatRightParts.repeat(iterator-1) + unchangedRightParts + afterSANArray)));
 //expanding rule
