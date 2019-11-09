@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
+<button onclick="startstop()">Pause/Resume</button>
 <p><font face="arial" size="20" id="number"></font></p>
 <script>
 var t = 0;
@@ -467,10 +468,13 @@ function valueNumber(t) {
 	}
 	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
 }
-
+var tAdder = 5;
+function startstop() {
+	tAdder = (tAdder+5)%10;
+}
 function displayOutput() {
 	document.getElementById("number").innerHTML = valueNumber(t);
-	t+=5;
+	t+=tAdder;
 	}
 setInterval(displayOutput,50);
 
