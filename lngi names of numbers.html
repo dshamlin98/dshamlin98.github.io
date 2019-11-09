@@ -287,7 +287,10 @@ function tier3number(logloglogNum) {
 			illionArray = [Math.floor(tier2illion%1000), Math.floor((tier2illion/1000)%1000), Math.floor(tier2illion/1e6)]; // ones, thousands, millions
 			if (tier2illion < 1e6) {
 				numberName += tier1illionPrefix(Math.floor(numArray[1-i]), 2); // T1 prefix
-				if (tier2illion >= 1e4) {numberName += "-<br>"}
+				if (tier2illion >= 1e4) {
+					if (numArray[1] > 1) {numberName += "-"};
+					numberName += "<br>"
+				}
 			}
 			if (illionArray[2] > 0) {
 				if (illionArray[1] > 0 || illionArray[0] > 0) {
@@ -372,7 +375,10 @@ function tier4number(loglogloglogNum) {
 			illionArray = [Math.floor(tier3illion%1000), Math.floor((tier3illion/1000)%1000), Math.floor(tier3illion/1e6)]; // ones, thousands, millions
 			if (tier3illion < 1e6) {
 				numberName += tier2illionPrefix(Math.floor(numArray[1-i]), 2).fontcolor("blue"); // T2 prefix
-				if (tier3illion >= 1e4) {numberName += "-<br>"}
+				if (tier3illion >= 1e4) {
+					if (numArray[1] > 1) {numberName += "-"};
+					numberName += "<br>";
+				}
 			}
 			if (illionArray[2] > 0) {
 				if (illionArray[2] > 1) {
