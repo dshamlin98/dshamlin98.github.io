@@ -282,13 +282,13 @@ function tier3number(logloglogNum) {
 	var tier2illion = Math.floor(10**logloglogNum/3); // 1000 = killillion, 1m = meg-
 	if (tier2illion < 1e9) {
 		numArray = [(10**(10**logloglogNum%3)*1000)%1000, 10**(10**logloglogNum%3)];
-		if (tier2illion < 10000) {k=1} else {k=0};
+		if (tier2illion < 1e4) {k=1} else {k=0};
 		for (i=0; i<=k; i++) {
 			illionArray = [Math.floor(tier2illion%1000), Math.floor((tier2illion/1000)%1000), Math.floor(tier2illion/1e6)]; // ones, thousands, millions
 			if (tier2illion < 1e6) {
 				numberName += tier1illionPrefix(Math.floor(numArray[1-i]), 2); // T1 prefix
-				if (tier2illion >= 1e4) {
-					if (numArray[1] > 1) {numberName += "-"};
+				if (tier2illion >= 1e3) {
+					if (Math.floor(numArray[1]) > 1) {numberName += "-"};
 					numberName += "<br>"
 				}
 			}
@@ -318,10 +318,11 @@ function tier3number(logloglogNum) {
 				}
 			}
 			if (numArray[0] != 0 && i != k) {
-				numberName += "-";
+				numberName += "-<br>";
 			}
 			tier2illion--;
 		}
+		numberName.replace("<br><br>","<br>");
 	} else {
 		var tier3illion = logloglogNum-Math.log10(3); // 9 = gigillion
 		if (tier3illion >= 3000) {
@@ -370,7 +371,7 @@ function tier4number(loglogloglogNum) {
 	var tier3illion = Math.floor(10**loglogloglogNum/3); // 1000 = kalillion, 1m = mej-
 	if (tier3illion < 1e9) {
 		numArray = [Math.floor((10**(10**loglogloglogNum%3)*1000)%1000), Math.floor(10**(10**loglogloglogNum%3))];
-		if (tier3illion < 10000 && numArray[0] != 0) {k=1} else {k=0};
+		if (tier3illion < 1e4 && numArray[0] != 0) {k=1} else {k=0};
 		for (i=0; i<=k; i++) {
 			illionArray = [Math.floor(tier3illion%1000), Math.floor((tier3illion/1000)%1000), Math.floor(tier3illion/1e6)]; // ones, thousands, millions
 			if (tier3illion < 1e6) {
@@ -401,7 +402,7 @@ function tier4number(loglogloglogNum) {
 				numberName += tier3illionPrefix(illionArray[0], 3).fontcolor("green");
 			}
 			if (i != k && numArray[0] > 0) {
-				numberName += "a".fontcolor("green");
+				numberName += "a-<br>".fontcolor("green");
 			}
 			tier3illion--;
 		}
