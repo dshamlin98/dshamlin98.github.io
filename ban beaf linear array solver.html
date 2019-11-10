@@ -28,7 +28,12 @@ if (inputString.indexOf("{") == -1) { // No array
 } else if (Array.length == 1) { // Rule 1
 	outputString = Array[0] + "";
 } else if (Array.length == 2) { // Rule 1
-	outputString = Array[0] ** Array[1] + "";
+	var logNumber = Array[1] * Math.log10(Array[0]);
+	if (logNumber >= 300 && logNumber < 1e21) {
+		outputString = 10**(logNumber%1) + "e+" + Math.floor(logNumber);
+	} else {
+		outputString = Array[0] ** Array[1] + "";
+	}
 } else if (Array[Array.length-1] == 1) { // Rule 2
 	Array.pop()
 	outputString = "{" + Array + "}";
