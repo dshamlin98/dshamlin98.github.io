@@ -279,6 +279,9 @@ function tier3number(logloglogNum) {
 	var num = 0;
 	var illionNumber = 0;
 	var logNum = 0;
+	if (logloglogNum < 15) {
+		logloglogNum = Math.log10(10**(logloglogNum)-Math.log10(3));
+	}
 	var tier2illion = Math.floor(10**logloglogNum/3); // 1000 = killillion, 1m = meg-
 	if (tier2illion < 1e9) {
 		numArray = [(10**(10**logloglogNum%3)*1000)%1000, 10**(10**logloglogNum%3)];
@@ -368,6 +371,9 @@ function tier4number(loglogloglogNum) {
 	var num = 0;
 	var illionNumber = 0;
 	var logNum = 0;
+	if (loglogloglogNum < 15) {
+		loglogloglogNum = Math.log10(10**(loglogloglogNum)-Math.log10(3));
+	}
 	var tier3illion = Math.floor(10**loglogloglogNum/3); // 1000 = kalillion, 1m = mej-
 	if (tier3illion < 1e9) {
 		numArray = [Math.floor((10**(10**loglogloglogNum%3)*1000)%1000), Math.floor(10**(10**loglogloglogNum%3))];
