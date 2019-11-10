@@ -2,10 +2,23 @@
 <html>
 <body>
 <button onclick="startstop()">Pause/Resume</button>
+<button onclick="resetTo0()">Reset to 0</button>
+<button onclick="plus1min()">Fast forward 1 minute</button>
+<button onclick="minus1min()">Rewind 1 minute</button>
 <p><font face="arial" size="20" id="number"></font></p>
 <script>
 var t = 0;
 var numberDisplay = 0;
+
+function save() {
+	localStorage.setItem('numsv', JSON.stringify(t));
+}
+
+function load() {
+	if (localStorage.getItem('numsv')) {
+		t = JSON.parse(localStorage.getItem('numsv'));
+	}
+}
 
 function tier0number(num) { // number from 0 to 999
 	var ones = ["","one","two","three","four","five","six","seven","eight","nine"];
@@ -481,15 +494,27 @@ function valueNumber(t) {
 	}
 	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
 }
+
 var tAdder = 5;
 function startstop() {
 	tAdder = (tAdder+5)%10;
+}
+function resetTo0() {
+	t = 0;
+}
+function plus1min() {
+	t += 6000;
+}
+function minus1min() {
+	t = Math.max(0, t - 6000);
 }
 function displayOutput() {
 	document.getElementById("number").innerHTML = valueNumber(t);
 	t+=tAdder;
 	}
-setInterval(displayOutput,50);
+load();
+setInterval(displayOutput, 50);
+setInterval(save, 50);
 
 </script>
 </body>
