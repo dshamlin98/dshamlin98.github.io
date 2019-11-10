@@ -497,7 +497,11 @@ function valueNumber(t) {
 
 var tAdder = 5;
 function startstop() {
-	tAdder = (tAdder+5)%10;
+if (tAdder == 0) {
+	tAdder = 5;
+	} else {
+	tAdder = 0;
+	}
 }
 function resetTo0() {
 	t = 0;
