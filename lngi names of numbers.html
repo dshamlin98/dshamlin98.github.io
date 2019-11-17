@@ -5,6 +5,8 @@
 <button onclick="resetTo0()">Reset to 0</button>
 <button onclick="plus1min()">Fast forward 1 minute</button>
 <button onclick="minus1min()">Rewind 1 minute</button>
+<button onclick="plus1h()">Fast forward 1 hour</button>
+<button onclick="minus1h()">Rewind 1 hour</button>
 <p><font face="arial" size="20" id="number"></font></p>
 <script>
 var t = 0;
@@ -297,7 +299,7 @@ function tier3number(logloglogNum) {
 	}
 	var tier2illion = Math.floor(10**logloglogNum/3); // 1000 = killillion, 1m = meg-
 	if (tier2illion < 1e9) {
-		numArray = [(10**(10**logloglogNum%3)*1000)%1000, 10**(10**logloglogNum%3)];
+		numArray = [Math.floor((10**(10**logloglogNum%3)*1000)%1000), Math.floor(10**(10**logloglogNum%3))];
 		if (tier2illion < 1e4) {k=1} else {k=0};
 		for (i=0; i<=k; i++) {
 			illionArray = [Math.floor(tier2illion%1000), Math.floor((tier2illion/1000)%1000), Math.floor(tier2illion/1e6)]; // ones, thousands, millions
@@ -503,15 +505,11 @@ if (tAdder == 0) {
 	tAdder = 0;
 	}
 }
-function resetTo0() {
-	t = 0;
-}
-function plus1min() {
-	t += 6000;
-}
-function minus1min() {
-	t = Math.max(0, t - 6000);
-}
+function resetTo0() {t = 0}
+function plus1min() {t += 6000}
+function minus1min() {t = Math.max(0, t - 6000)}
+function plus1h() {t += 360000}
+function minus1h() {t = Math.max(0, t - 360000)}
 function displayOutput() {
 	document.getElementById("number").innerHTML = valueNumber(t);
 	t+=tAdder;
