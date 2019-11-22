@@ -5,10 +5,13 @@
 <button onclick="resetTo0()">Reset to 0</button>
 <button onclick="plus1min()">Fast forward 1 minute</button>
 <button onclick="minus1min()">Rewind 1 minute</button>
-<button onclick="plus1h()">Fast forward 1 hour</button>
-<button onclick="minus1h()">Rewind 1 hour</button>
-<p><font face="arial" size="20" id="number"></font></p>
+<button onclick="showNumber()">Show number</button><br>
+
+<p><font face="arial" size="5" id="number2"></font>
+<font face="arial" size="7" id="number"></font></p>
 <script>
+//<button onclick="plus1h()">Fast forward 1 hour</button>
+//<button onclick="minus1h()">Rewind 1 hour</button>
 var t = 0;
 var numberDisplay = 0;
 
@@ -300,7 +303,7 @@ function tier3number(logloglogNum) {
 	var tier2illion = Math.floor(10**logloglogNum/3); // 1000 = killillion, 1m = meg-
 	if (tier2illion < 1e9) {
 		numArray = [Math.floor((10**(10**logloglogNum%3)*1000)%1000), Math.floor(10**(10**logloglogNum%3))];
-		if (tier2illion < 1e4) {k=1} else {k=0};
+		if (tier2illion < 1e4 && numArray[0] != 0) {k=1} else {k=0};
 		for (i=0; i<=k; i++) {
 			illionArray = [Math.floor(tier2illion%1000), Math.floor((tier2illion/1000)%1000), Math.floor(tier2illion/1e6)]; // ones, thousands, millions
 			if (tier2illion < 1e6) {
@@ -369,7 +372,7 @@ function tier3number(logloglogNum) {
 function tier4illionPrefix(num, vers) {
 // vers = 0: right before illion, 1: tier-2 separator, 2: tier-3 separator
 	var nums = ["","kal","mej","gij","ast","lun","ferm","jov","sol","bet","gloc","gax","sup","vers","mult","pyr"];
-	var nums2 = ["","al","ej","ij","ast","un","erm","ov","ol","eat","oc","ax","up","ers","ult"]; // using eat instead of at because of the sequence bet,det,tret,tet,pet can cause confusion with meg,gig,ter,pet with pet having two possible meanings.
+	var nums2 = ["","al","ej","ij","ast","un","erm","ov","ol","etel","oc","ax","up","ers","ult"]; // using eat instead of at because of the sequence bet,det,tret,tet,pet can cause confusion with meg,gig,ter,pet with pet having two possible meanings.
 	var numberName = "";
 	num = Math.floor(num);
 	if (num > 14 || num <= 0) {
@@ -461,7 +464,7 @@ function tier4number(loglogloglogNum) {
 	return (numberName+"illion").trim();
 }
 function valueNumber(t) {
-	var x = t*1.0000005**t;
+	var x = 10*(t+1e5)**0.8-1e5;
 	if (x < 30000) {
 		return tier0number((x/1000)**2 + x/300); // up to 10^3
 	} else if (x < 300000) {
@@ -496,11 +499,51 @@ function valueNumber(t) {
 	}
 	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
 }
-
-var tAdder = 5;
+function valueNumber2(t) {
+	var x = 10*(t+1e5)**0.8-1e5;
+	if (x < 30000) {
+		return Math.floor((x/1000)**2 + x/300).toLocaleString(); // up to 10^3
+	} else if (x < 300000) {
+		i = (x-30000)/270000
+		return Math.floor(10**(3 + 7*i)).toLocaleString(); // up to 10^10
+	} else if (x < 2300000) {
+		i = (x-300000)/2000000
+		if (10**10**i < 21) {
+			return Math.floor(10**10**10**i).toLocaleString();
+		} else {
+			return (Math.floor(10**((10**10**i)%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(10**10**i).toLocaleString() + "</sup>";
+		} // from 10^10 to 10^^3
+	} else if (x < 6800000) {
+		i = (x-2300000)/4500000
+		if (10**10**i < 21) {
+			return "10<sup>" + Math.floor(10**10**10**i).toLocaleString() + "</sup>";
+		} else {
+			return "10<sup>" + (Math.floor(10**((10**10**i)%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(10**10**i).toLocaleString() + "</sup></sup>";
+		} // from 10^^3 to 10^^4
+	} else if (x < 17000000) {
+		i = (x-6800000)/10200000
+		if (10**10**i < 21) {
+			return "10<sup>10<sup>" + Math.floor(10**10**10**i).toLocaleString() + "</sup></sup>";
+		} else {
+			return "10<sup>10<sup>" + (Math.floor(10**((10**10**i)%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(10**10**i).toLocaleString() + "</sup></sup></sup>";
+		} // from 10^^4 to 10^^5
+	} else {
+		i = (x-17000000)/23000000
+		if (10**10**i < 21) {
+			return "10<sup>10<sup>10<sup>" + Math.floor(10**10**10**i).toLocaleString() + "</sup></sup></sup>";
+		} else {
+			imin = Math.min(10**10**i, 45.477121254719662);
+			return "10<sup>10<sup>10<sup>" + (Math.floor(10**(imin%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(imin).toLocaleString() + "</sup></sup></sup></sup>";
+		}
+	}
+	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
+}
+var showNum = false;
+var runInterval = 16.666; // milliseconds
+var tAdder = runInterval*0.1;
 function startstop() {
 if (tAdder == 0) {
-	tAdder = 5;
+	tAdder = runInterval*0.1;
 	} else {
 	tAdder = 0;
 	}
@@ -510,13 +553,21 @@ function plus1min() {t += 6000}
 function minus1min() {t = Math.max(0, t - 6000)}
 function plus1h() {t += 360000}
 function minus1h() {t = Math.max(0, t - 360000)}
+function showNumber() {
+	showNum = !(showNum);
+}
 function displayOutput() {
 	document.getElementById("number").innerHTML = valueNumber(t);
+	if (showNum) {
+	document.getElementById("number2").innerHTML = valueNumber2(t) + "<br>";
+	} else {
+	document.getElementById("number2").innerHTML = "";
+	}
 	t+=tAdder;
 	}
 load();
-setInterval(displayOutput, 50);
-setInterval(save, 50);
+setInterval(displayOutput, runInterval);
+setInterval(save, runInterval);
 
 </script>
 </body>
