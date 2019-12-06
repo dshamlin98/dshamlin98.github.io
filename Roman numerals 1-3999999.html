@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<center><font size="7" id="number2"> </font></center>
+<center><font size="5" id="number1"></font></center>
+<body>
+<script>
+var ones = ["","I","II","III","IV","V","VI","VII","VIII","IX"];
+var tens = ["","X","XX","XXX","XL","L","LX","LXX","LXXX","XC"];
+var hundreds = ["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"];
+var thousands = ["","M","MM","MMM","Mv","v","vM","vMM","vMMM","M0"];
+var currentNumber = 0;
+var t = 0;
+var g = '<span style="text-decoration:overline">';
+var h = '</span>';
+currentNumber = Math.floor(currentNumber);
+
+function romanNumber(num) {
+	if (num > 3999999 || num < 0) {
+		return "";
+	} else {
+	return g+thousands[Math.floor(num/1000000)%10]+h +
+	g+hundreds[Math.floor(num/100000)%10]+h +
+	g+tens[Math.floor(num/10000)%10]+h +
+	thousands[Math.floor(num/1000)%10].replace(/v/g,g+"V"+h).replace(/0/g,g+"X"+h) +
+	hundreds[Math.floor(num/100)%10] +
+	tens[Math.floor(num/10)%10] + ones[Math.floor(num)%10];
+	}
+}
+function outputNumber() {
+	currentNumber = Math.min(1 + t/20 + t**3/1000000000, 3999999)
+	document.getElementById("number1").innerHTML = Math.floor(currentNumber);
+	document.getElementById("number2").innerHTML = romanNumber(currentNumber);
+	t++;
+}
+setInterval(outputNumber, 50);
+</script>
+</body>
+</html>
