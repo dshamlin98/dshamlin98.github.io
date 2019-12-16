@@ -124,11 +124,7 @@ function tier1number(logNum) {
 		numArray = [num%1000, Math.floor((num/1000)%1000), Math.floor((num/1e6)%1000), Math.floor((num/1e9)%1000)];
 		if (numArray[3] > 0) {numberName += tier0number(numArray[3]) + " billion<br>"}
 		if (numArray[2] > 0) {numberName += tier0number(numArray[2]) + " million<br>"}
-		if (num < 1000000) {
-			if (numArray[1] > 0) {numberName += tier0number(numArray[1]) + " thousand "}
-		} else {
-			if (numArray[1] > 0) {numberName += tier0number(numArray[1]) + " thousand<br>"}
-		}
+		if (numArray[1] > 0) {numberName += tier0number(numArray[1]) + " thousand<br>"}
 		if (numArray[0] > 0) {numberName += tier0number(numArray[0])}
 	} else {
 		num = Math.floor(10**(logNum%3 + 9));
