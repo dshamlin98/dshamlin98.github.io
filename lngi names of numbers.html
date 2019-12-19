@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
-	<title>Numbers increasing in word form</title>
 <body>
 <button onclick="startstop()">Pause/Resume</button>
 <button onclick="resetTo0()">Reset to 0</button>
 <button onclick="plus1min()">Fast forward 1 minute</button>
 <button onclick="minus1min()">Rewind 1 minute</button>
-<button onclick="showNumber()">Show number</button><br>
+<button onclick="showNumber()">Show number</button>
+Max number of digits before switching to scientific (min: 10, max: 308): <input type="text" value="21" id="maxDigits"></input> Use 60fps:<input type="checkbox" id="fps60"></input>
+<br>
 
 <p><font face="arial" size="5" id="number2"></font>
 <font face="arial" size="7" id="number"></font></p>
@@ -462,6 +463,9 @@ function tier4number(loglogloglogNum) {
 }
 function valueNumber(t) {
 	var x = 10*(t+1e5)**0.8-1e5;
+	if (!(document.getElementById("fps60").checked)) {
+		x = 10*(Math.floor(t/5)*5+1e5)**0.8-1e5;
+	}
 	if (x < 30000) {
 		return tier0number((x/1000)**2 + x/300); // up to 10^3
 	} else if (x < 300000) {
@@ -497,7 +501,13 @@ function valueNumber(t) {
 	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
 }
 function valueNumber2(t) {
+	var numDigits = document.getElementById("maxDigits").value;
+	if (isNaN(numDigits)) {numDigits = 10}
+	numDigits = Math.max(Math.min(Math.floor(numDigits),308),10);
 	var x = 10*(t+1e5)**0.8-1e5;
+	if (!(document.getElementById("fps60").checked)) {
+		x = 10*(Math.floor(t/5)*5+1e5)**0.8-1e5;
+	}
 	if (x < 30000) {
 		return Math.floor((x/1000)**2 + x/300).toLocaleString(); // up to 10^3
 	} else if (x < 300000) {
@@ -505,28 +515,28 @@ function valueNumber2(t) {
 		return Math.floor(10**(3 + 7*i)).toLocaleString(); // up to 10^10
 	} else if (x < 2300000) {
 		i = (x-300000)/2000000
-		if (10**10**i < 21) {
+		if (10**10**i < numDigits) {
 			return Math.floor(10**10**10**i).toLocaleString();
 		} else {
 			return (Math.floor(10**((10**10**i)%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(10**10**i).toLocaleString() + "</sup>";
 		} // from 10^10 to 10^^3
 	} else if (x < 6800000) {
 		i = (x-2300000)/4500000
-		if (10**10**i < 21) {
+		if (10**10**i < numDigits) {
 			return "10<sup>" + Math.floor(10**10**10**i).toLocaleString() + "</sup>";
 		} else {
 			return "10<sup>" + (Math.floor(10**((10**10**i)%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(10**10**i).toLocaleString() + "</sup></sup>";
 		} // from 10^^3 to 10^^4
 	} else if (x < 17000000) {
 		i = (x-6800000)/10200000
-		if (10**10**i < 21) {
+		if (10**10**i < numDigits) {
 			return "10<sup>10<sup>" + Math.floor(10**10**10**i).toLocaleString() + "</sup></sup>";
 		} else {
 			return "10<sup>10<sup>" + (Math.floor(10**((10**10**i)%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(10**10**i).toLocaleString() + "</sup></sup></sup>";
 		} // from 10^^4 to 10^^5
 	} else {
 		i = (x-17000000)/23000000
-		if (10**10**i < 21) {
+		if (10**10**i < numDigits) {
 			return "10<sup>10<sup>10<sup>" + Math.floor(10**10**10**i).toLocaleString() + "</sup></sup></sup>";
 		} else {
 			imin = Math.min(10**10**i, 45.477121254719662);
@@ -536,7 +546,7 @@ function valueNumber2(t) {
 	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
 }
 var showNum = false;
-var runInterval = 50; // milliseconds
+var runInterval = 16.666; // milliseconds
 var tAdder = runInterval*0.1;
 function startstop() {
 if (tAdder == 0) {
