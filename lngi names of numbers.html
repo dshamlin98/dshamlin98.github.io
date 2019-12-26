@@ -471,7 +471,7 @@ function tier4number(loglogloglogNum) {
 function valueNumber(t) {
 	var x = 10*(t+1e5)**0.8-1e5;
 	if (!(document.getElementById("fps60").checked)) {
-		x = 10*(Math.floor(t/5)*5+1e5)**0.8-1e5;
+		x = 10*(Math.floor(t/5/speedMultiplier)*5*speedMultiplier+1e5)**0.8-1e5;
 	}
 	if (x < 30000) {
 		return tier0number((x/1000)**2 + x/300); // up to 10^3
@@ -513,7 +513,7 @@ function valueNumber2(t) {
 	numDigits = Math.max(Math.min(Math.floor(numDigits),308),10);
 	var x = 10*(t+1e5)**0.8-1e5;
 	if (!(document.getElementById("fps60").checked)) {
-		x = 10*(Math.floor(t/5)*5+1e5)**0.8-1e5;
+		x = 10*(Math.floor(t/5/speedMultiplier)*5*speedMultiplier+1e5)**0.8-1e5;
 	}
 	if (x < 30000) {
 		return Math.floor((x/1000)**2 + x/300).toLocaleString(); // up to 10^3
