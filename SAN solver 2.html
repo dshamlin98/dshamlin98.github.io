@@ -797,7 +797,18 @@ document.getElementById("message").innerHTML = SANmessage;
 }
 function plugFinalResult() {
 	if (finalResult != undefined) {
-		document.getElementById("input").value = finalResult;
+		startResult = finalResult;
+		if (SANmode == 3) {
+			startResult = startResult.replace(/,,,2\}/g, "^,,}");
+		} else if (SANmode == 4) {
+			for (i=99; i>=1; i--) {
+				replaceString = RegExp("{1,," + (i+1) + "\\}", "g")
+				startResult = startResult.replace(replaceString, "`".repeat(i));
+				replaceString2 = RegExp(",," + (i+1) + "\\}", "g")
+				startResult = startResult.replace(replaceString2, "^" + "`".repeat(i)+"}");
+			}
+		}
+		document.getElementById("input").value = startResult;
 	}
 	solve();
 }
