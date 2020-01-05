@@ -3,13 +3,14 @@
 <body>
 
 <textarea id="input">s(3,3{1``3}3)</textarea>
-<button onclick="solve()">Solve</button>
+<button onclick="solve()">Solve</button><button onclick="plugFinalResult()">Plug in result and solve</button>
 <p id="message">This is a calculator that can be used to solve SAN arrays up to DAN. You input any SAN array you want and click "Solve" and it will evaluate one step for you. You can use [] in place of {}, and it works fine. It recognizes whether to use exAN, mEAN, pDAN, or DAN. Use {2^`} and {2^,,} if you want {2<sup>`</sup>} and {2<sup>,,</sup>} respectively. Supported: s(), any m-ple comma (,,,...,,,), curly braces, and multiple grave accents (```...```). Note that this solver may fail to solve an array in a reasonable amount of time if you give it too complex of an expression.</p>
 
 <script>
 
 var SANmode = 0; // 1 - DAN, 2 - sDAN, 3 - pDAN, 4 - mEAN
 var SANmessage;
+var finalResult;
 
 function getSANmode(SANArray) {
 	if (SANArray.includes(",,,")) {
@@ -603,9 +604,7 @@ function calculate() {
 		/* Now work inside the separator.*/
 		
 while (true) {
-		
-		
-		
+				
 	var separatorsInSeparator = getAllSeparatorsInSeparator(SANseparator);
 	var entriesInSeparator = getAllEntriesInSeparator(SANseparator);
 	entryIndex = 0; // restart entryindex in new layer
@@ -795,6 +794,12 @@ if (SANmode == 3) {
 }
 		
 document.getElementById("message").innerHTML = SANmessage;
+}
+function plugFinalResult() {
+	if (finalResult != undefined) {
+		document.getElementById("input").value = finalResult;
+	}
+	solve();
 }
 
 // function list: maxCommas, convertToMaxCommas, convertMEANtoPDAN, convertPDANtoDAN, 
