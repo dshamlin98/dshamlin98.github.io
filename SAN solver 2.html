@@ -499,6 +499,8 @@ function calculate() {
 	var inputString = document.getElementById("input").value;
 	inputString = inputString.replace(/\[/g, "{").replace(/\]/g, "}").replace(/\s/g, "");
 	if (!(inputString.includes("s("))) { // don't evaluate when no s( is found
+		SANinput = inputString;
+		SANmessage = "Input: " + SANinput + "<br><br>It's already solved to a number.<br>Result: ";
 		return inputString;
 	}
 	SANinput = rule3atBaseLayer(inputString);
