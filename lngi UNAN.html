@@ -3,6 +3,16 @@
 <body>
 <p><font size="5" id="number"></font></p>
 <script>
+var t=0;
+function save() {
+	localStorage.setItem('unanlngi', JSON.stringify(t));
+}
+
+function load() {
+	if (localStorage.getItem('unanlngi')) {
+		t = JSON.parse(localStorage.getItem('unanlngi'));
+	}
+}
 
 function smoothCurve(fraction, lowerLimit, upperLimit, steepness) {
 	fraction = Math.max(Math.min(fraction, 1), 0);
@@ -12,7 +22,6 @@ function smoothCurve(fraction, lowerLimit, upperLimit, steepness) {
 var maxPrecisionDigits = 20;
 var precisionDigits = maxPrecisionDigits;
 var versionNum = 0;
-var t=0;
 var finishedArray = false;
 
 function removeTrailingZerosInArray(Array) {
@@ -166,6 +175,7 @@ function convertToLAN(Array) {
 function convertToUNAN(Array) {
 	return 10 + Array.replace(/\]\[/g, "]10[").replace("(","").replace(")","").replace("xe","e");
 }
+load();
 function displayNumber() {
 	if (t < 1000) {
 		finalNumber = Math.floor(t/10);
@@ -181,6 +191,8 @@ function displayNumber() {
 	document.getElementById("number").innerHTML = finalNumber;
 }
 setInterval(displayNumber, 16);
+setInterval(save, 100);
+
 
 /*
 [1](n) = {10, n}
