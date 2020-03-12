@@ -187,7 +187,7 @@ function displayNumber() {
 	} else if (t >= 1000 && t < 30000){
 		finalNumber = Math.floor(10**(2+8*((t-1000)/29000)));
 	} else if (t >= 30000 && t < 1000000) {
-		finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(1+((t-30000)/970000)**0.5)));
+		finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(1+((t-30000)/970000)**0.75)));
 	} else {
 		finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(2+((t-1000000)/5000000)**0.9)));
 	}
