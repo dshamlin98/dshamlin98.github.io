@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
+Running: <input type="checkbox" id="numberRunning" checked></input>
 <p><font size="5" id="number"></font></p>
 <script>
 var t=0;
@@ -186,7 +187,9 @@ function displayNumber() {
 	} else {
 		finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(2+((t-1000000)/5000000)**0.9)));
 	}
-	t+=1;
+	if (document.getElementById("numberRunning").checked) {
+		t+=1;
+	}
 	finalNumber // for unan
 	document.getElementById("number").innerHTML = finalNumber;
 }
