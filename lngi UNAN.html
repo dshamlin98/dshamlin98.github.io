@@ -174,7 +174,11 @@ function convertToLAN(Array) {
 	return currentArray.replace("(","").replace(")","").replace("xe","e");
 }
 function convertToUNAN(Array) {
-	return 10 + Array.replace(/\]\[/g, "]10[").replace("(","").replace(")","").replace("xe","e");
+	if (Array.includes("[")) {
+		return 10 + Array.replace(/\]\[/g, "]10[").replace("(","").replace(")","").replace("xe","e");
+	} else {
+		return Array.replace("(","").replace(")","").replace("xe","e");
+	}
 }
 load();
 function displayNumber() {
