@@ -19,7 +19,7 @@ function smoothCurve(fraction, lowerLimit, upperLimit, steepness) {
 	steepness = 2;//Math.max(Math.min(steepness, 2), 2);
 	return lowerLimit-1+(upperLimit-lowerLimit+1)**((fraction+fraction**steepness*(steepness-1))/steepness)
 }
-var maxPrecisionDigits = 20;
+var maxPrecisionDigits = 25;
 var precisionDigits = maxPrecisionDigits;
 var versionNum = 0;
 var finishedArray = false;
