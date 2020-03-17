@@ -5,6 +5,7 @@ Running: <input type="checkbox" id="numberRunning" checked></input>
 <p><font size="5" id="number"></font></p>
 <script>
 var t=0;
+var tReduce=0;
 function save() {
 	localStorage.setItem('unanlngi', JSON.stringify(t));
 }
@@ -50,6 +51,9 @@ function LinArraySolve(Array) { // Array is of the form ...[a,b,c,...](number)
 	if (activeArray[0]==1 && activeArray.length==1) {
 		if (numberArray < 10 && precisionDigits > 1) {
 			resultNumber=10**numberArray;
+			if (resultNumber >= 10000) {
+				precisionDigits=0;//finishedArray = true;
+			}
 			return removedArray + "(" + resultNumber + ")";
 		} else if (numberArray < 10000 && precisionDigits > 3) {
 			precisionDigits=0;
@@ -182,6 +186,7 @@ function convertToUNAN(Array) {
 }
 load();
 function displayNumber() {
+	tReduce = 0;
 	if (t < 1000) {
 		finalNumber = Math.floor(t/10);
 	} else if (t >= 1000 && t < 30000){
@@ -190,6 +195,10 @@ function displayNumber() {
 		finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(1+((t-30000)/970000)**0.75)));
 	} else {
 		finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(2+((t-1000000)/5000000)**0.9)));
+		while (finalNumber == "10" && 2+((t-1000000)/5000000)**0.9 > 1) {
+			tReduce++;
+			finalNumber = convertToUNAN(evaluateLinArray(linArrayEntries(2+Math.max(((t-1000000-tReduce)/5000000),0)**0.9)));
+		}
 	}
 	if (document.getElementById("numberRunning").checked) {
 		t+=1;
