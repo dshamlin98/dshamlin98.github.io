@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<body>
+Running: <input type="checkbox" id="numberRunning" checked></input>
+<p><font size="5" id="number"></font></p>
+<script>
+var t=0;
+var tReduce=0;
+var maxChars = 0;
+function save() {
+	localStorage.setItem('lanlngi', JSON.stringify(t));
+}
+
+function load() {
+	if (localStorage.getItem('lanlngi')) {
+		t = JSON.parse(localStorage.getItem('lanlngi'));
+	}
+}
+
+function smoothCurve(fraction, lowerLimit, upperLimit, steepness) {
+	fraction = Math.max(Math.min(fraction, 1), 0);
+	steepness = 2;//Math.max(Math.min(steepness, 2), 2);
+	return lowerLimit-1+(upperLimit-lowerLimit+1)**((fraction+fraction**steepness*(steepness-1))/steepness)
+}
+var maxPrecisionDigits = 30;
+var precisionDigits = maxPrecisionDigits;
+var versionNum = 0;
+var finishedArray = false;
+
+function removeTrailingZerosInArray(Array) {
+	while (Array.includes(",0]")) {
+		Array = Array.replace(/,0\]/g, "]");
+	}
+	return Array;
+}
+
+function LinArraySolve(Array) { // Array is of the form ...[a,b,c,...](number)
+// version: 1 = dont degenerate to 1 if (number) = 1
+// [removed arrays][activeArray](numberArray)
+// Array = "[1,3,5][0,2,2][0,2,2](3.4783)"
+	Array = removeTrailingZerosInArray(Array);
+	singleArray = Array.slice(Array.lastIndexOf("[")); // [0,2,2](3.4783)
+	removedArray = Array.slice(0, Array.lastIndexOf("[")); // [1,3,5][0,2,2]
+	numberArray = Number(singleArray.slice(singleArray.indexOf("(")+1, singleArray.indexOf(")"))); // 3.4783
+	if (isNaN(numberArray)) {
+		finishedArray = true;
+		return Array;
+	}
+	activeArray = singleArray.slice(singleArray.indexOf("[")+1, singleArray.indexOf("]")).split(","); // array: 0,2,2 numbers are strings
+	
+	// Rule 1
+	if (activeArray[0]==1 && activeArray.length==1) {
+		if (numberArray < 10 && precisionDigits > 1) {
+			resultNumber=10**numberArray;
+			if (resultNumber >= 10000) {
+				finishedArray = true;
+			}
+			return removedArray + "(" + resultNumber + ")";
+		} else if (numberArray < 10000 && precisionDigits > 3) {
+			precisionDigits=0;
+			return removedArray + "(" + ((10**(numberArray%1)).toFixed(3) + "xe" + Math.floor(numberArray)) + ")"
+		} else {
+			precisionDigits=0;
+			finishedArray = true;
+			return Array;
+		}
+	}
+	// Rule 2
+	sumOfEntriesInActiveArray = activeArray.reduce(function(a,b){return a - -b;}, 0);
+	
+	if (activeArray[0] > 0 && numberArray>=1 && numberArray<2) { // Rule 2a
+		versionNum = 0;
+		activeArray[0] -= 1;
+		numberArray = smoothCurve(numberArray%1, 1, 10, sumOfEntriesInActiveArray);
+		precisionDigits -= 1+Math.log10(numberArray);
+		return removedArray + "[" + activeArray + "](" + numberArray + ")";
+	}
+	if (activeArray[0] > 0) { // Rule 2b
+		versionNum = 0;
+		if (activeArray.length > 31) {
+			numberArray = 10;
+		}
+		if (numberArray>=10) {
+			precisionDigits=0;
+			finishedArray = true;
+			return Array;
+		} else {
+			oldActiveArray = activeArray+"";
+			newActiveArray = activeArray;
+			newActiveArray[0] -= 1;
+			newNumberArray = numberArray;
+			newNumberArray -= Math.floor(numberArray-1);
+			return removedArray + ("[" + newActiveArray + "]").repeat(Math.floor(numberArray-1)) + "[" + oldActiveArray + "](" + newNumberArray + ")";
+		}
+	}	
+	if (activeArray[0] == 0) { // Rule 3
+		currentEntry=0;
+		while (activeArray[currentEntry]==0){
+			currentEntry++;
+		} // current entry is first non0 entry
+		activeArray[currentEntry]--;
+		if (numberArray >= 2) {
+			activeArray[currentEntry-1] = Math.ceil(numberArray);
+			if (currentEntry==1) {
+				numberArray = smoothCurve(numberArray-Math.ceil(numberArray)+1, 2, 10, sumOfEntriesInActiveArray);
+				versionNum = 0;
+				precisionDigits -= Math.log10(numberArray);
+			} else {
+				numberArray = smoothCurve(numberArray-Math.ceil(numberArray)+1, 0, 10, sumOfEntriesInActiveArray);
+				versionNum = 1;
+				precisionDigits -= Math.log10(1+numberArray);
+			}
+			return removeTrailingZerosInArray(removedArray + "[" + activeArray + "](" + numberArray + ")");
+		} else if (numberArray >= 1 && numberArray < 2 && versionNum==0) {
+			activeArray[currentEntry-1] = 2;
+			numberArray = smoothCurve(numberArray%1, 1, 10, sumOfEntriesInActiveArray);
+			precisionDigits -= Math.log10(numberArray);
+			return removeTrailingZerosInArray(removedArray + "[" + activeArray + "](" + numberArray + ")");	
+		} else if (numberArray < 2 && versionNum==1) {
+			if (currentEntry < 1) {versionNum = 0;}
+			activeArray[currentEntry-1] = Math.ceil(numberArray);
+			if (currentEntry>1) {
+				numberArray = smoothCurve(numberArray-Math.ceil(numberArray)+1, 0, 10, sumOfEntriesInActiveArray);
+				precisionDigits -= Math.log10(1+numberArray);
+			} else {
+				numberArray = smoothCurve(numberArray-Math.ceil(numberArray)+1, 2, 10, sumOfEntriesInActiveArray);
+				precisionDigits -= Math.log10(numberArray);
+			}
+			return removeTrailingZerosInArray(removedArray + "[" + activeArray + "](" + numberArray + ")");				
+		}
+	}
+}
+function evaluateLinArray(Array) {
+	finishedArray = false;
+	precisionDigits = maxPrecisionDigits;
+	Array = LinArraySolve(Array);
+	while ((precisionDigits > 0 || !Array.includes("][")) && !Array.includes("e") && !finishedArray &&Array.length<300) {
+		Array = LinArraySolve(Array);
+	}
+	numberArray = Number(Array.slice(Array.indexOf("(")+1, Array.indexOf(")"))); // 1.234
+	if (isNaN(numberArray)) {return Array;}
+	if (numberArray >= 2) {
+		numberArray = Math.floor(numberArray);
+		return Array.slice(0,Array.indexOf("(")) + "(" + numberArray + ")";
+	} else {
+		return Array.slice(0,Array.lastIndexOf("[")) + "(10)";
+	}
+	return Array;
+}
+
+function linArrayEntries(number) {
+	versionNum = 1;
+	return "[" + "0,".repeat(Math.floor(number)) + "1](" + smoothCurve(number%1, 1, 10, 1) + ")";
+}
+function convertOnceToLAN(Array) { // [1,2,3][2,4][3,3](12)
+	//Array = Array.replace("(","").replace(")","");
+	removedArray = Array.slice(0, Array.lastIndexOf("[")); // [1,2,3][2,4]
+	partialArray = Array.slice(Array.lastIndexOf("[")+1, Array.lastIndexOf("]")).split(","); // 3,3 (array)
+	lastNumberArray = Array.slice(Array.indexOf("(")+1,Array.indexOf(")")); // 12
+	for (currentEntry=0; currentEntry<partialArray.length; currentEntry++) {
+		partialArray[currentEntry] -= -1;
+	}
+	partialArray[0] -= 1;
+	if (partialArray[0] > 0) {
+		return removedArray + "(" + "{10," + lastNumberArray + "," + partialArray + "}" + ")";
+	}
+	currentEntry = 1;
+	while (partialArray[currentEntry] == 1) {
+		currentEntry++;
+	}
+	partialArray[currentEntry]--;
+	return removedArray + "({" + "10,".repeat(currentEntry+1) + lastNumberArray + "," + partialArray.slice(currentEntry) + "})";
+}
+function convertToLAN(Array) {
+	currentArray = Array
+	while (currentArray.includes("[")) {
+		currentArray = convertOnceToLAN(currentArray);
+	}
+	while (currentArray.includes(",1}")) {
+		currentArray = currentArray.replace(",1}","}");
+	}
+	maxChars = Math.max(currentArray.length,maxChars);
+	return currentArray.replace("(","").replace(")","").replace("xe","e");
+}
+/*function convertToUNAN(Array) {
+	if (Array.includes("[")) {
+		return 10 + Array.replace(/\]\[/g, "]10[").replace("(","").replace(")","").replace("xe","e");
+	} else {
+		return Array.replace("(","").replace(")","").replace("xe","e");
+	}
+}*/
+load();
+function displayNumber() {
+	tReduce = 0;
+	if (t < 1000) {
+		finalNumber = Math.floor(t/10);
+	} else if (t >= 1000 && t < 30000){
+		finalNumber = Math.floor(10**(2+8*((t-1000)/29000))); // up to 10^10
+	} else if (t >= 30000 && t < 1000000) { // up to {10,10,10}
+		finalNumber = convertToLAN(evaluateLinArray(linArrayEntries(1+((t-30000)/970000)**0.75)));
+	} else if (t >= 1000000 && t < 6000000) { // up to {10,10,10,10}
+		finalNumber = convertToLAN(evaluateLinArray(linArrayEntries(2+((t-1000000)/5000000)**0.9)));
+		while (finalNumber == "10" && 2+((t-1000000)/5000000)**0.9 > 1) {
+			tReduce++;
+			finalNumber = convertToLAN(evaluateLinArray(linArrayEntries(2+Math.max(((t-1000000-tReduce)/5000000),0)**0.9)));
+		}
+		
+	} else {
+		finalNumber = convertToLAN(evaluateLinArray(linArrayEntries(Math.min(2+97**((t-6000000)/50000000),99))));
+		while (finalNumber == "10" && 2+97**((t-6000000)/50000000) > 1) {
+			tReduce++;
+			finalNumber = convertToLAN(evaluateLinArray(linArrayEntries(Math.min(2+97**((t-6000000-tReduce)/50000000),99))));
+		}
+	}
+	if (document.getElementById("numberRunning").checked) {
+		t+=1;
+	}
+	finalNumber // for unan
+	document.getElementById("number").innerHTML = finalNumber;
+}
+setInterval(displayNumber, 16);
+setInterval(save, 100);
+
+
+/*
+[1](n) = {10, n}
+[2](n) = {10, n, 2}
+[0,1](n) = {10, 10, n}
+[1,1](n) = {10, n, 1, 2}
+
+rule 1: {1}[n] = 10^n
+rule 2a: {a,b,c,...}[n] = {a-1,b,c,...}[1~10], 1<=n<2
+rule 2b: {a,b,c,...}[n] = {a-1,b,c,...}{a,b,c,...}[n-1], n>=2
+rule 3a: {0,a,b,c,...}[n] = {2,a-1,b,c,...}[1~10], 1<=n<2
+rule 3b: {0,a,b,c,...}[n] = {ceil(n),a-1,b,c,...}[2~10], n>=2
+{0,0,a,b,c,...}[n] = {0,ceil(n),a-1,b,c,...}[1~10]??
+
+Plan
+{x}[4] = {0,0,0,0,1}[10] = {0,0,0,10}[10] = {0,0,10,9}[10] = {0,10,9,9}[10]
+{0,0,0,0,1}[10.01] = {0,0,0,11}[1.02]
+
+{x}[4.1] = {0,0,0,0,0,1}[1.26] = {0,0,0,0,2}[1.82] = {0,0,0,2,1}[6.61] = {0,0,7,1,1}[4.07] = {0,5,6,1,1}[1.17] = {2,4,6,1,1}[1.48] = {1,4,6,1,1}[3.02] = {0,4,6,1,1}{0,4,6,1,1}{0,4,6,1,1}[1.05] = {0,4,6,1,1}{0,4,6,1,1}{2,3,6,1,1}[1.11] = {0,4,6,1,1}{0,4,6,1,1}{1,3,6,1,1}[1.30] = {0,4,6,1,1}{0,4,6,1,1}{0,3,6,1,1}[2.00] = {0,4,6,1,1}{0,4,6,1,1}{2,2,6,1,1}[10.00]
+
+
+{2}[2] = {1}[10] = 10^10
+{2}[3] = {1}{1}[10] = 10^^3
+{2}[10] = 10^^10
+{3}[2] = {2}[10] = 10^^10
+{3}[2.0001] = {2}{2}[~1]
+{3}[2.5] = {2}{2}[10^0.5]
+{3}[3] = {2}{2}[10] = 10^^^3
+{4}[2] = {3}[10] = 10^^^10
+
+Let {0,1}[1.n] = {3}[1.n]
+{0,1}[2] = {2}[10] = 10^^10
+{0,1}[2.5] = {3}[2+9^0.5]
+{0,1}[3] = {3}[10] = 10^^^10
+{1,1}[2] = {0,1}[10] = 10{10}10
+{1,1}[2.001] = {0,1}{0,1}[1.002] = {0,1}{3}[1.002] = {0,1}{2}[1.005] = {0,1}{1}[1.01] ~ {0,1}[10]
+{2,1}[2] = {1,1}[10]
+
+{0,2}[2] = {2,1}[10]
+{0,2}[2.5] = {3,1}[1+9^0.5]
+{0,2}[3] = {3,1}[10]
+
+{0,0,1}[2] = {0,2}[10] = {10,1}[10]
+{0,0,1}[2.5] = {0,3}[?]
+
+
+
+*/
+
+
+
+</script>
+</body>
+</html>
