@@ -130,7 +130,7 @@ function evaluateLinArray(Array) {
 	finishedArray = false;
 	precisionDigits = maxPrecisionDigits;
 	Array = LinArraySolve(Array);
-	while ((precisionDigits > 0 || !Array.includes("][")) && !Array.includes("e") && !finishedArray) {
+	while ((precisionDigits > 0 || !Array.includes("][")) && !Array.includes("e") && !finishedArray &&Array.length<300) {
 		Array = LinArraySolve(Array);
 	}
 	numberArray = Number(Array.slice(Array.indexOf("(")+1, Array.indexOf(")"))); // 1.234
