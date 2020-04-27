@@ -4,14 +4,6 @@
 <button onclick="startstop()">Pause/Resume</button>
 <button onclick="resetTo0()">Reset to 0</button>
 <button onclick="showNumber()">Show number</button>
-
-
-<p> </p>
-<p><center><font face="arial" size="6" id="number2"></font></center></p>
-<p><font face="arial" size="6" id="number"></font></p>
-<script>
-/*
-Max number of digits before switching to scientific (min: 10, max: 308): <input type="text" value="21" id="maxDigits"></input> Use 60fps:<input type="checkbox" id="fps60"></input>
 <br>
 <button onclick="plus1s()">Fast forward 1 second</button>
 <button onclick="minus1s()">Rewind 1 second</button>
@@ -21,6 +13,14 @@ Max number of digits before switching to scientific (min: 10, max: 308): <input 
 <button onclick="minus1h()">Rewind 1 hour</button>
 <button onclick="speedDouble()">Speed x2</button>
 <button onclick="speedHalf()">Speed /2</button>
+
+<p> </p>
+<p><center><font face="arial" size="6" id="number2"></font></center></p>
+<p><font face="arial" size="6" id="number"></font></p>
+<script>
+/*
+Max number of digits before switching to scientific (min: 10, max: 308): <input type="text" value="21" id="maxDigits"></input> Use 60fps:<input type="checkbox" id="fps60"></input>
+
 */
 var t = 0;
 var speedMultiplier = 1;
