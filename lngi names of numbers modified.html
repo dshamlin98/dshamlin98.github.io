@@ -527,7 +527,7 @@ function valueNumber(t) {
 function valueNumber2(t) {
 	var numDigits = document.getElementById("maxDigits").value;
 	if (isNaN(numDigits)) {numDigits = 10}
-	//numDigits = Math.max(Math.min(Math.floor(numDigits),308),10);
+	numDigits = Math.max(Math.min(Math.floor(numDigits),308),10);
 	var x = 10*(t+1e4)**0.75-1e4+t**1.1/100;
 	var getFullNumber = "";
 	if (document.getElementById("fps20").checked) {
