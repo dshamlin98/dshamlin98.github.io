@@ -487,7 +487,7 @@ function tier4number(loglogloglogNum) {
 function valueNumber(t) {
 	var x = 10*(t+1e4)**0.75-1e4+t**1.1/100;
 	if (document.getElementById("fps20").checked) {
-		x = 10*(Math.floor(t/5/speedMultiplier)*5*speedMultiplier+1e5)**0.8-1e5;
+		x = 10*((t-t%5)+1e4)**0.75-1e4+(t-t%5)**1.1/100;
 	}
 	if (x < 30000) {
 		return tier0number((x/1000)**2 + x/300); // up to 10^3
@@ -495,6 +495,7 @@ function valueNumber(t) {
 		i = (x-30000)/270000
 		return tier1number(3 + 7*i); // up to 10^10
 	} else if (x < 2300000) {
+		//i = Math.min((x-300000)/2000000,Math.log10(Math.log10(12)))
 		i = (x-300000)/2000000
 		if (10**10**i < 3003) {
 			return tier1number(10**10**i);
@@ -530,7 +531,7 @@ function valueNumber2(t) {
 	var x = 10*(t+1e4)**0.75-1e4+t**1.1/100;
 	var getFullNumber = "";
 	if (document.getElementById("fps20").checked) {
-		x = 10*(Math.floor(t/5/speedMultiplier)*5*speedMultiplier+1e5)**0.8-1e5;
+		x = 10*((t-t%5)+1e4)**0.75-1e4+(t-t%5)**1.1/100;
 	}
 	if (x < 30000) {
 		return Math.floor((x/1000)**2 + x/300).toLocaleString(); // up to 10^3
@@ -538,6 +539,7 @@ function valueNumber2(t) {
 		i = (x-30000)/270000
 		return Math.floor(10**(3 + 7*i)).toLocaleString(); // up to 10^10
 	} else if (x < 2300000) {
+		//i = Math.min((x-300000)/2000000,Math.log10(Math.log10(12)))
 		i = (x-300000)/2000000
 		if (10**10**i < numDigits) {
 			return Math.floor(10**10**10**i).toLocaleString();
