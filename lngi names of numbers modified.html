@@ -4,6 +4,7 @@
 <button onclick="startstop()">Pause/Resume</button>
 <button onclick="resetTo0()">Reset to 0</button>
 <button onclick="showNumber()">Show number</button>
+Max number of digits before switching to scientific (min: 10, max: 308): <input type="text" value="21" id="maxDigits"></input> Reduce fps:<input type="checkbox" id="fps20"></input>
 <br>
 <button onclick="plus1s()">Fast forward 1 second</button>
 <button onclick="minus1s()">Rewind 1 second</button>
@@ -13,15 +14,12 @@
 <button onclick="minus1h()">Rewind 1 hour</button>
 <button onclick="speedDouble()">Speed x2</button>
 <button onclick="speedHalf()">Speed /2</button>
+<button onclick="reverseSpeed()">Reverse</button>
 
 <p> </p>
 <p><center><font face="arial" size="6" id="number2"></font></center></p>
 <p><font face="arial" size="6" id="number"></font></p>
 <script>
-/*
-Max number of digits before switching to scientific (min: 10, max: 308): <input type="text" value="21" id="maxDigits"></input> Use 60fps:<input type="checkbox" id="fps60"></input>
-
-*/
 var t = 0;
 var speedMultiplier = 1;
 var numberDisplay = 0;
@@ -488,9 +486,9 @@ function tier4number(loglogloglogNum) {
 }
 function valueNumber(t) {
 	var x = 10*(t+1e4)**0.75-1e4+t**1.1/100;
-	/*if (!(document.getElementById("fps60").checked)) {
+	if (document.getElementById("fps20").checked) {
 		x = 10*(Math.floor(t/5/speedMultiplier)*5*speedMultiplier+1e5)**0.8-1e5;
-	}*/
+	}
 	if (x < 30000) {
 		return tier0number((x/1000)**2 + x/300); // up to 10^3
 	} else if (x < 300000) {
@@ -531,9 +529,9 @@ function valueNumber2(t) {
 	//numDigits = Math.max(Math.min(Math.floor(numDigits),308),10);
 	var x = 10*(t+1e4)**0.75-1e4+t**1.1/100;
 	var getFullNumber = "";
-	/*if (!(document.getElementById("fps60").checked)) {
+	if (document.getElementById("fps20").checked) {
 		x = 10*(Math.floor(t/5/speedMultiplier)*5*speedMultiplier+1e5)**0.8-1e5;
-	}*/
+	}
 	if (x < 30000) {
 		return Math.floor((x/1000)**2 + x/300).toLocaleString(); // up to 10^3
 	} else if (x < 300000) {
@@ -593,6 +591,7 @@ function plus1h() {t += 360000*speedMultiplier}
 function minus1h() {t = Math.max(0, t - 360000*speedMultiplier)}
 function speedDouble() {speedMultiplier *= 2}
 function speedHalf() {speedMultiplier /= 2}
+function reverseSpeed() {speedMultiplier *= -1}
 function showNumber() {
 	showNum = !(showNum);
 }
@@ -603,7 +602,11 @@ function displayOutput() {
 	} else {
 	document.getElementById("number2").innerHTML = "";
 	}
-	t+=tAdder*speedMultiplier;
+	if (t > 67530640 && speedMultiplier < 24) {
+		speedMultiplier = 24;
+		t = 0;
+	}
+	t = Math.max(t+tAdder*speedMultiplier, 0);//)%67533640;
 	}
 load();
 setInterval(displayOutput, runInterval);
