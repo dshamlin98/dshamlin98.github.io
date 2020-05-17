@@ -2,9 +2,15 @@
 <html>
 <body>
 Running: <input type="checkbox" id="numberRunning" checked></input>
+<button onclick="func1()">Reset to 0</button>
+<button onclick="func2()">x2 Speed</button>
+<button onclick="func3()">/2 Speed</button>
+<button onclick="func4()">Increase precision</button>
+<button onclick="func5()">Decrease precision</button>
 <p>NUMBER:<br><font size="5" id="number"></font></p>
 <script>
 var t=0;
+var tStep=1;
 var tReduce=0;
 function save() {
 	localStorage.setItem('beonlngi', JSON.stringify(t));
@@ -32,7 +38,6 @@ function removeTrailingZerosInArray(Array) {
 	}
 	return Array;
 }
-
 function LinArraySolve(Array) { // Array is of the form ...[a,b,c,...](number)
 // version: 1 = dont degenerate to 1 if (number) = 1
 // [removed arrays][activeArray](numberArray)
@@ -151,7 +156,6 @@ function evaluateLinArray(Array) {
 	}
 	return Array;
 }
-
 function linArrayEntries(number) {
 	versionNum = 1;
 	return "[" + "0,".repeat(Math.floor(number)) + "1](" + smoothCurve(number%1, 1, 10, 1) + ")";
@@ -200,14 +204,18 @@ function displayNumber() {
 
 	}
 	if (document.getElementById("numberRunning").checked) {
-		t+=1;
+		t+=tStep;
 	}
 	finalNumber // for unan
 	document.getElementById("number").innerHTML = finalNumber;
 }
 setInterval(displayNumber, 15);
 setInterval(save, 100);
-
+function func1() {t=0}
+function func2() {tStep*=2}
+function func3() {tStep/=2}
+function func4() {maxPrecisionDigits+=1}
+function func5() {maxPrecisionDigits-=1}
 
 </script>
 </body>
