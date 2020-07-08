@@ -3,6 +3,7 @@
 <body>
 <button onclick="startstop()">Pause/Resume</button>
 <button onclick="resetTo0()">Reset to 0</button>
+<button onclick="goToMaxValue()">Go to maximum value</button>
 <button onclick="showNumber()">Show number</button>
 Max number of digits before switching to scientific (min: 10, max: 308): <input type="text" value="21" id="maxDigits"></input> Reduce fps:<input type="checkbox" id="fps20"></input>
 <br>
@@ -522,7 +523,7 @@ function valueNumber(t) {
 			return tier4number(10**10**i);
 		}
 	}
-	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion" + "<br>(limit)";
+	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
 }
 function valueNumber2(t) {
 	var numDigits = document.getElementById("maxDigits").value;
@@ -572,7 +573,7 @@ function valueNumber2(t) {
 			return "10<sup>10<sup>10<sup>" + (Math.floor(10**(imin%1)*1000000)/1000000).toFixed(6) + " × 10<sup>" + Math.floor(imin).toLocaleString() + "</sup></sup></sup></sup>";
 		}
 	}
-	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
+	return "";
 }
 var showNum = true;
 var runInterval = 16.666; // milliseconds
@@ -584,7 +585,8 @@ if (tAdder == 0) {
 	tAdder = 0;
 	}
 }
-function resetTo0() {t = 0*speedMultiplier}
+function resetTo0() {t = 0}
+function goToMaxValue() {t = 67527641.222}
 function plus1s() {t += 100*speedMultiplier}
 function minus1s() {t = Math.max(0, t - 100*speedMultiplier)}
 function plus1min() {t += 6000*speedMultiplier}
