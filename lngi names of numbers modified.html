@@ -522,7 +522,7 @@ function valueNumber(t) {
 			return tier4number(10**10**i);
 		}
 	}
-	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion";
+	return "one " + "nonecxen".fontcolor("green") + "ulti".fontcolor("red") + "nonecxen".fontcolor("green") + "ersi".fontcolor("red") + "nonecxen".fontcolor("green") + "up".fontcolor("red") + "illion" + "<br>(limit)";
 }
 function valueNumber2(t) {
 	var numDigits = document.getElementById("maxDigits").value;
@@ -604,11 +604,7 @@ function displayOutput() {
 	} else {
 	document.getElementById("number2").innerHTML = "";
 	}
-	if (t > 67530640 && speedMultiplier < 24) {
-		speedMultiplier = 24;
-		t = 0;
-	}
-	t = Math.max(t+tAdder*speedMultiplier, 0);//)%67533640;
+	t = Math.min(Math.max(t+tAdder*speedMultiplier, 0),67527641.222);
 	}
 load();
 setInterval(displayOutput, runInterval);
