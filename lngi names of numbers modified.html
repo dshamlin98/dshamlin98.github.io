@@ -16,7 +16,8 @@ Max number of digits before switching to scientific (min: 10, max: 308): <input 
 <button onclick="speedDouble()">Speed x2</button>
 <button onclick="speedHalf()">Speed /2</button>
 <button onclick="reverseSpeed()">Reverse</button>
-
+<br>
+Speed multiplier: <input type="text" value="1" id="speedMult"></input>
 <p> </p>
 <p><center><font face="arial" size="6" id="number2"></font></center></p>
 <p><font face="arial" size="6" id="number"></font></p>
@@ -593,9 +594,9 @@ function plus1min() {t += 6000*speedMultiplier}
 function minus1min() {t = Math.max(0, t - 6000*speedMultiplier)}
 function plus1h() {t += 360000*speedMultiplier}
 function minus1h() {t = Math.max(0, t - 360000*speedMultiplier)}
-function speedDouble() {speedMultiplier *= 2}
-function speedHalf() {speedMultiplier /= 2}
-function reverseSpeed() {speedMultiplier *= -1}
+function speedDouble() {document.getElementById("speedMult").value *= 2}
+function speedHalf() {document.getElementById("speedMult").value /= 2}
+function reverseSpeed() {document.getElementById("speedMult").value *= -1}
 function showNumber() {
 	showNum = !(showNum);
 }
@@ -607,6 +608,11 @@ function displayOutput() {
 	document.getElementById("number2").innerHTML = "";
 	}
 	t = Math.min(Math.max(t+tAdder*speedMultiplier, 0),67527641.222);
+	if (isNaN(document.getElementById("speedMult").value)) {
+		speedMultiplier = 0;
+		} else {
+		speedMultiplier = document.getElementById("speedMult").value;
+		}
 	}
 load();
 setInterval(displayOutput, runInterval);
