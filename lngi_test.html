@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><center><font face="arial" size="7" id="textstuff"></font></center></p>
+
+<script>
+var t = 0;
+var s = 0;
+var r = 0;
+function runthisthing() {
+	t++;
+	r = Math.floor((t**1.2/40)%360);
+	document.body.style.backgroundColor = "hsl("+r+", 100%, 90%)";
+	
+	if (t < 4000) {
+		document.getElementById("textstuff").innerHTML = (t / 2000).toFixed(2);
+	} else if (t < 50000) {
+		s = 2**(t / 2000 - 1);
+		if (s < 100) {
+			s = s.toFixed(2);
+		} else if (s < 1000) {
+			s = s.toFixed(1);
+		} else {
+			s = Math.floor(s).toLocaleString();
+		}
+		document.getElementById("textstuff").innerHTML = s;
+	} else {
+		s = ((128/3)**(((t/100000+0.5)**3-1)/7)*24)*Math.log10(2);
+		if (s < 12) {
+			s = Math.floor(10**s).toLocaleString();
+		} else {
+			s = (10**(s%1)).toFixed(3) + "e" + Math.floor(s);
+		}
+		document.getElementById("textstuff").innerHTML = s;
+	}
+	if (t==150000) window.location.href = 'https://i.gifer.com/IlDK.gif'
+}
+setInterval(runthisthing,3);
+
+</script>
+</body>
+</html>
