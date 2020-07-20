@@ -8,7 +8,9 @@ var t = 0;
 var s = 0;
 var r = 0;
 function runthisthing() {
-	t++;
+	if (t < 150000) {
+		t++;
+	}
 	r = Math.floor((t**1.2/40)%360);
 	document.body.style.backgroundColor = "hsl("+r+", 100%, 90%)";
 	
