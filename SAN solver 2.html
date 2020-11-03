@@ -11,6 +11,8 @@
 var SANmode = 0; // 1 - DAN, 2 - sDAN, 3 - pDAN, 4 - mEAN
 var SANmessage;
 var finalResult;
+var startTime;
+var elapsedTime;
 
 function getSANmode(SANArray) {
 	if (SANArray.includes(",,,")) {
@@ -776,13 +778,18 @@ while (j > 1) {
 // beforeSANArray + leftPartialArray + Separator + rightPartialArray + afterSANArray
 
 function solve() {
+startTime = new Date().getTime();
 getSANmode(document.getElementById("input").value);
 finalResult = calculate();
 	finalResult = simplify(rule3(rule3atBaseLayer(finalResult)));
 SANmessage += finalResult;
 SANmessage = simplify(SANmessage);
+elapsedTime = new Date().getTime() - startTime;
+var timeSeconds;
+var timeMinutes;
+var timeHours;
 
-if (SANmode == 4) { 
+if (SANmode == 4) {
 	for (i=99; i>=1; i--) {
 		replaceString = RegExp("{1,," + (i+1) + "\\}", "g")
 		SANmessage = SANmessage.replace(replaceString, "`".repeat(i));
@@ -794,7 +801,20 @@ if (SANmode == 4) {
 if (SANmode == 3) { 
 	SANmessage = SANmessage.replace(/,,,2\}/g, "<sup>,,</sup>}");
 }
-		
+	timeSeconds = Math.floor((elapsedTime/1000)%60);
+	timeMinutes = Math.floor((elapsedTime/60000)%60);
+	timeHours = Math.floor(elapsedTime/3600000);
+	SANmessage += "<br><br>Solving time: ";
+	if (elapsedTime < 60000) {
+		SANmessage += (elapsedTime/1000).toFixed(3) + " seconds";
+	} else if (elapsedTime < 3600000) {
+		SANmessage += timeMinutes + " minute" + (timeMinutes==1 ? ", " : "s, ") + 
+		timeSeconds + " second" + (timeSeconds==1 ? "" : "s");
+	} else {
+		SANmessage += timeHours + " hour" + (timeHours==1 ? ", " : "s, ") + 
+		timeMinutes + " minute" + (timeMinutes==1 ? ", " : "s, ") + 
+		timeSeconds + " second" + (timeSeconds==1 ? "" : "s");
+	}
 document.getElementById("message").innerHTML = SANmessage;
 }
 function plugFinalResult() {
