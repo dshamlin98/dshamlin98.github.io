@@ -530,13 +530,13 @@ function calculate() {
 	}
 	SANinput = rule3atBaseLayer(inputString);
 	SANinput = simplify(rule3(convertMEANtoPDAN(convertPDANtoDAN(SANinput))));
-	var SANArray = inputString.slice(inputString.lastIndexOf("s("));
+	var SANArray = SANinput.slice(SANinput.lastIndexOf("s("));
 	SANArray = SANArray.slice(0, SANArray.indexOf(")") + 1); // get innermost SAN array
 	SANArray = rule3atBaseLayer(SANArray);
 	SANArray = simplify(rule3(convertMEANtoPDAN(convertPDANtoDAN(SANArray))));
 	SANArray = convertToMaxCommas(SANArray); // convert to m-ple commas by using ,,...,, (i commas) = {1,,...,,,2} (i+1 commas)
-	var beforeSANArray = inputString.slice(0, inputString.lastIndexOf("s(")); // to remember what was cut off
-	var afterSANArray = inputString.slice(inputString.indexOf(")",inputString.lastIndexOf("s(")) + 1);
+	var beforeSANArray = SANinput.slice(0, SANinput.lastIndexOf("s(")); // to remember what was cut off
+	var afterSANArray = SANinput.slice(SANinput.indexOf(")",SANinput.lastIndexOf("s(")) + 1);
 	var getMaxCommas = maxCommas(SANArray);
 
 	// convert to DAN and apply rule 3 until rule 3 cannot apply anymore.
