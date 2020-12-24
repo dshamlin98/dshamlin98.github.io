@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<style>
+.display1 {
+	margin: auto;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+</style>
+<body>
+<p><font face="arial" size="7" id="textstuff" class="display1"></font></p>
+
+<script>
+var t = 0;
+var s = 0;
+var r = 0;
+var u = 0;
+var f = 6000/142;
+var randSeed = Math.floor(150000+247400*Math.random());
+function runthisthing() {
+	t++;
+	var w = Math.max(0.1+0.89**(t/30000), 0.2);
+	u = t;
+	if (t > 210276 - 210276%f) {u = t - t%f + Math.abs((t%f)*2/f-1)**w * f/2 * Math.sign((t%f)*2/f-1) + f/2;}
+	var color1 = Math.floor((u**2.1/300000)%360);
+	var color2 = 1;
+	var color3 = s >= 1e100 ? 1 : Math.max(0.4+(t > 210276 ? 0.5 : 0.6)*2**(-1*(u/400000)**0.5), 0.5);
+	document.body.style.backgroundColor = "hsl("+color1+", "+100*color2+"%, "+100*color3+"%)";
+	
+	if (u < 4000) {
+		document.getElementById("textstuff").innerHTML = (u / 2000).toFixed(3);
+	} else if (u < 50000) {
+		s = 2**(u / 2000 - 1);
+		if (s < 10) {
+			r = s.toFixed(3);
+		} else if (s < 100) {
+			r = s.toFixed(2);
+		} else if (s < 1000) {
+			r = s.toFixed(1);
+		} else {
+			r = Math.floor(s).toLocaleString('en-US');
+		}
+		document.getElementById("textstuff").innerHTML = r;
+	} else {
+		s = Math.min(Math.log10(2) * 12 * 2**(u/30000-5/3) * 2**(2**Math.max(1,u/200000)-1), 1e100);
+		var dp = Math.min(Math.floor(15-Math.log10(s)), 6);
+		if (s < 15) {
+			r = Math.floor(10**s).toLocaleString('en-US');
+		} else if (s < 1e15) {
+			r = (Math.floor(10**(s%1+dp))/10**dp).toFixed(dp) + "\u00A0×\u00A010<sup>" + Math.floor(s).toLocaleString('en-US') + "</sup>";
+		} else if (s < 1/0) {
+			r = "10<sup>" + (10**(Math.log10(s)%1)).toFixed(6) + "\u00A0×\u00A010<sup>" + Math.floor(Math.log10(s)) + "</sup></sup>";
+		} else {
+			r = 1/0;
+		}
+		document.getElementById("textstuff").innerHTML = r;
+	}
+	//if (t==randSeed) window.location.href = 'https://i.gifer.com/IlDK.gif'
+}
+setInterval(runthisthing,10);
+
+</script>
+</body>
+</html>
