@@ -165,6 +165,7 @@ function valueNumber(t) {
 function displayOutput() {
 	document.getElementById("number").innerHTML = "<sup>".repeat(8) + " " + "</sup>".repeat(8) + valueNumber(t);
 	t+=speed;
+	t=Math.max(0,t);
 	}
 setInterval(displayOutput,10);
 
