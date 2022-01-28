@@ -4,6 +4,7 @@
 <p><font face="arial" size="20" id="number"></font></p>
 <script>
 var t = 0;
+var speed = 1;
 var numberDisplay = 0;
 
 function ptFunction(num) {
@@ -163,7 +164,7 @@ function valueNumber(t) {
 
 function displayOutput() {
 	document.getElementById("number").innerHTML = "<sup>".repeat(8) + " " + "</sup>".repeat(8) + valueNumber(t);
-	t++;
+	t+=speed;
 	}
 setInterval(displayOutput,10);
 
