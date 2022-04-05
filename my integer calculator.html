@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>Integer calculator</h2>
+A=<textarea id="input1">1</textarea>
+B=<textarea id="input2">1</textarea>
+<p><button onclick="add()">A + B</button><button onclick="subtract()">A - B</button><button onclick="multiply()">A × B</button><button onclick="divide()">A ÷ B</button> Max decimals for division:<input id="maxDecimals" value="100"></p>
+<p id="output"></p>
+<script>
+
+function isAllDigits(num) {
+	num = num.trim();
+	if (num.slice(0,1) == "-" || num.slice(0,1) == "+") num = num.slice(1);
+	return num.match(/^[0-9]+$/) != null;
+}
+function add() {
+	num1 = document.getElementById("input1").value;
+	num2 = document.getElementById("input2").value;
+	if (isAllDigits(num1) && isAllDigits(num2)) {
+		document.getElementById("output").innerHTML = num1 + " + " + num2 + " = " + (BigInt(num1)+BigInt(num2));
+	}
+}
+function subtract() {
+	num1 = document.getElementById("input1").value;
+	num2 = document.getElementById("input2").value;
+	if (isAllDigits(num1) && isAllDigits(num2)) {
+		document.getElementById("output").innerHTML = num1 + " - " + num2 + " = " + (BigInt(num1)-BigInt(num2));
+	}
+}
+function multiply() {
+	num1 = document.getElementById("input1").value;
+	num2 = document.getElementById("input2").value;
+	if (isAllDigits(num1) && isAllDigits(num2)) {
+		document.getElementById("output").innerHTML = num1 + " × " + num2 + " = " + (BigInt(num1)*BigInt(num2));
+	}
+}
+function divide() {
+	num1 = document.getElementById("input1").value;
+	num2 = document.getElementById("input2").value;
+	if (isAllDigits(num1) && isAllDigits(num2)) {
+		if (BigInt(num2) == 0n) {
+			window.location.href = 'https://youtu.be/dQw4w9WgXcQ'
+		} else {
+			var quotient = BigInt(num1)/BigInt(num2);
+			var remainder = BigInt(num1)%BigInt(num2);
+			if (remainder != 0n) {
+				quotient += ".";
+				d = document.getElementById("maxDecimals").value;
+				if (isNaN(d) || d < 0 || d == 1/0) d=0;
+				for (i=0;i<d;i++){
+					remainder *= 10n;
+					quotient += remainder/BigInt(num2);
+					remainder %= BigInt(num2);
+					if (remainder == 0n) break;
+				}
+				if (remainder !== 0n) quotient += "...";
+			}
+		}
+		document.getElementById("output").innerHTML = num1 + " ÷ " + num2 + " = " + (num2!=0?quotient:"");
+	}
+}
+
+</script>
+</body>
+</html>
