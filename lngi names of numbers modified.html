@@ -64,10 +64,10 @@ function tier0number(num) { // number from 0 to 999
 	return numberName.trim();
 }
 function tier1illion(num) { // number from 0 to 999, 1=million, 2=billion, etc.
-	var ones = ["","m","b","tr","quadr","quint","sext","sept","oct","non"];
-	var ones2 = ["","un","duo","tre","quattuor","quin","sex","septen","octo","novem"];
-	var tens = ["","dec","vigint","trigint","quadragint","quinquagint","sexagint","septuagint","octogint","nonagint"];
-	var hundreds = ["","cent","ducent","trecent","quadringent","quingent","sescent","septingent","octingent","nongent"];
+	var ones = ["","me","du","tre","tetr","pentr","hex","hept","octin","een"];
+	var ones2 = ["","me","du","tre","tetr","pent","hex","hept","octi","een"];
+	var tens = ["","grayson","abby","bella","melissa","matthew","hexihew","heptihew","octahew","ennahew"];
+	var hundreds = ["","pocoyo","pato","elly","nina","fred","angryalien","cattip","babybrid","sleepybird"];
 	var numberName = "";
 	num = Math.floor(num);
 	if (num > 999 || num < 0) {
@@ -93,10 +93,10 @@ function tier1illion(num) { // number from 0 to 999, 1=million, 2=billion, etc.
 	}
 }
 function tier1illionPrefix(num, vers) { // illion from 0 to 999, vers=0, use m,b,t for 1,2,3, vers=1 use un,duo,tre, vers=2 ignore "un" like so we have micrillion instead of unmicrillion
-	var ones = ["","m","b","tr","quadr","quint","sext","sept","oct","non"];
-	var ones2 = ["","un","duo","tre","quattuor","quin","sex","septen","octo","novem"];
-	var tens = ["","dec","vigint","trigint","quadragint","quinquagint","sexagint","septuagint","octogint","nonagint"];
-	var hundreds = ["","cent","ducent","trecent","quadringent","quingent","sescent","septingent","octingent","nongent"];
+	var ones = ["","me","du","tre","tetr","pentr","hex","hept","octin","een"];
+	var ones2 = ["","me","du","tre","tetr","pent","hex","hept","octi","een"];
+	var tens = ["","grayson","abby","bella","melissa","matthew","hexihew","heptihew","octahew","ennahew"];
+	var hundreds = ["","pocoyo","pato","elly","nina","fred","angryalien","cattip","babybrid","sleepybird"];
 	var numberName = "";
 	num = Math.floor(num);
 	if (num > 999 || num < 0) {
@@ -154,8 +154,8 @@ function tier1number(logNum) {
 }
 function tier2illionPrefix(num, vers) {
 // vers = 0: right before illion, 1: tier-1 separator, 2: tier-2 separator
-	var ones = ["","milli","micro","nano","pico","femto","atto","zepto","yocto","xono"];
-	var ones2 = ["","mill","micr","nan","pic","femt","att","zept","yoct","xon"];
+	var ones = ["","busybeaver","duck","pig","mouse","cow","cat","zebra","dog","lion"];
+	var ones2 = ["","busybeaver","duck","pig","mouse","cow","cat","zebra","dog","lion"];
 	var ones3 = ["","me","due","trio","tetre","pente","hexe","hepte","octe","enne"];
 	var teens = ["vec","mec","duec","trec","tetrec","pentec","hexec","heptec","octec","ennec"];
 	var tens = ["","","icos","triacont","tetracont","pentacont","hexacont","heptacont","octacont","ennacont"];
